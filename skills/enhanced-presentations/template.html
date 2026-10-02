@@ -1,0 +1,1689 @@
+<!doctype html>
+<!-- Enhanced Presentations engine — MIT license (see LICENSE). Formula fonts are subsets of STIX Two under the SIL Open Font License (see NOTICE.md). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presentation title</title>
+<!--
+  Animated HTML presentation · Short title
+  Visual aid for a class or talk. The source of truth is: the given content.
+  If it changes, review this file.
+
+  Controls: → / Space / Page Down / click = next · ← / Page Up = previous
+             I = index · F = fullscreen · B = black screen · ? = help
+  Testing:   #12 = go to step 12 · ?static = no transitions · ?t=7500 = freeze
+             the animations at that instant (ms), for screenshots · ?debug = safe area
+             and boxes whose content overflows (red outline).
+
+  TEMPLATE (Enhanced Presentations skill). Each example scene is a different COMPONENT
+  (catalog in reference/components.md). Create the file with
+  tools/new.py, copy the scenes needed, change their text to the
+  source text and delete the ones not used (also from ORDER). Review with review.py.
+
+  <script> blocks, in this order (do not change it):
+    1. FORMULAS  <span class="m" data-tex="..."> → HTML (mini-TeX: reference/formulas.md)
+    2. FIGURES   charts (chart) and computed figures
+    3. ORDER + ENGINE  scene order, camera and navigation
+    4. IMG       embedded photos (tools/images.py)
+-->
+<style>
+:root {
+  --ink: #1f1f1f;
+  --ink2: #4a4a4a;
+  --mute: #8a8a8a;
+  --rule: #d6d6d6;
+  --faint: #ededed;
+  --acc: #92d050;      /* accent color (green by default; theme.py changes it) */
+  --acc-d: #4f7d1e;    /* dark accent */
+  --acc-l: #eef6e4;    /* light accent for backgrounds */
+  --neg: #c0392b;      /* red: what is crossed out, the disadvantage, the negative */
+  --c2: #2e6bb0;       /* blue: second color to group terms */
+  --c3: #b5621b;       /* dark orange: third color */
+  --pos: #74a83a;      /* medium green: what advances or progresses */
+  --warm: #f4bf7f;     /* light orange: active zones, energy, flame */
+  --font: Calibri, Carlito, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --math: "EP Math", "EP Sym", "Cambria Math", Cambria, "Times New Roman", serif;
+  /* Signs that stretch in formulas (SVG masks): root, parentheses, brackets, braces, cross out */
+  --rad: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 100' preserveAspectRatio='none'%3E%3Cpath d='M1 62 L5.5 55 L11 97 L19.3 1.3 L20 1.3' fill='none' stroke='%23000' stroke-width='2' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --pl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M9.4 .6 C3 18 1 36 1 50 C1 64 3 82 9.4 99.4 L10 98.6 C4.8 80 3.7 64 3.7 50 C3.7 36 4.8 20 10 1.4 Z'/%3E%3C/svg%3E");
+  --pr: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M.6 .6 C7 18 9 36 9 50 C9 64 7 82 .6 99.4 L0 98.6 C5.2 80 6.3 64 6.3 50 C6.3 36 5.2 20 0 1.4 Z'/%3E%3C/svg%3E");
+  --bl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M9 1 H3 V99 H9' fill='none' stroke='%23000' stroke-width='2.2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --br: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M1 1 H7 V99 H1' fill='none' stroke='%23000' stroke-width='2.2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --cl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M9 1 C5 1 5.5 6 5.5 16 V40 C5.5 46 4 50 1 50 C4 50 5.5 54 5.5 60 V84 C5.5 94 5 99 9 99' fill='none' stroke='%23000' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --cr: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M1 1 C5 1 4.5 6 4.5 16 V40 C4.5 46 6 50 9 50 C6 50 4.5 54 4.5 60 V84 C4.5 94 5 99 1 99' fill='none' stroke='%23000' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --slash: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M2 98 L98 2' stroke='%23000' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #fff; overflow: hidden; }
+body { font-family: var(--font); color: var(--ink); -webkit-font-smoothing: antialiased; }
+body.idle { cursor: none; }
+
+#stage { position: absolute; left: 0; top: 0; width: 1600px; height: 900px;
+  transform-origin: 0 0; overflow: hidden; background: #fff; }
+
+/* ---------- Shared frame (do not touch) ---------- */
+#kicker { position: absolute; left: 80px; top: 36px; z-index: 5; font-size: 18px;
+  letter-spacing: .09em; text-transform: uppercase; color: var(--mute); }
+#kicker #sec { color: var(--acc-d); font-weight: 600; }
+#kicker #sec:not(:empty)::before { content: "/"; color: var(--rule); margin: 0 12px; }
+#foot { position: absolute; left: 80px; right: 56px; bottom: 20px; z-index: 5; display: flex;
+  align-items: center; gap: 26px; font-size: 17px; color: var(--mute); }
+#foot .sp { flex: 1; }
+#nav { display: flex; align-items: center; gap: 4px; opacity: .55; transition: opacity .3s; }
+#nav:hover { opacity: 1; }
+#nav button { border: 0; background: none; font: inherit; font-size: 28px; line-height: 1;
+  color: var(--mute); cursor: pointer; padding: 0 8px 4px; }
+#nav button:hover { color: var(--ink); }
+#count { font-variant-numeric: tabular-nums; min-width: 64px; text-align: center; }
+#bar { position: absolute; left: 0; bottom: 0; width: 100%; height: 4px; background: var(--faint); z-index: 5; }
+#bar i { display: block; height: 100%; width: 0; background: var(--acc); transition: width .4s ease; }
+#stage.cover #kicker, #stage.cover #ref, #stage.cover #brand { visibility: hidden; }
+/* Scene acronyms and abbreviations (data-acronyms, separated by " · "), top right */
+#acronyms { position: absolute; right: 56px; top: 30px; z-index: 5; max-width: 640px; text-align: right;
+  font-size: 17px; line-height: 1.3; color: var(--mute); }
+#acronyms b { color: var(--acc-d); font-weight: 600; }
+#stage.cover #acronyms { visibility: hidden; }
+/* Examples and exercises (class="scene pr"): blue accent instead of green, to distinguish practice from theory */
+.scene.pr, #stage.pr #kicker, #stage.pr #acronyms, #stage.pr #bar { --acc: #5b9bd5; --acc-d: #1f5f9e; --acc-l: #e8f1fb; }
+.scene.pr .hi.on { background-color: #dde8f5; box-shadow: 0 0 0 .1em #dde8f5; }
+
+/* ---------- Scenes and steps (do not touch) ---------- */
+.scene { position: absolute; inset: 0; opacity: 0; visibility: hidden;
+  transition: opacity .45s ease, visibility 0s linear .45s; }
+.scene.active { opacity: 1; visibility: visible; transition: opacity .45s ease; }
+.scene:not(.active) * { animation-play-state: paused !important; }
+[data-in], [data-out] { opacity: 0; transition: opacity .45s ease, transform .45s ease; }
+.up[data-in] { transform: translateY(10px); }
+[data-in].vis, [data-out].vis { opacity: 1; transform: none; }
+
+/* ---------- Text ---------- */
+h2 { position: absolute; left: 80px; top: 64px; margin: 0; font-size: 46px; font-weight: 600; letter-spacing: -.005em; }
+h3 { margin: 0 0 4px; font-size: 34px; font-weight: 600; }
+h4 { margin: 26px 0 12px; font-size: 20px; letter-spacing: .09em; text-transform: uppercase; color: var(--mute); font-weight: 600; }
+b { font-weight: 600; }
+sub, sup { font-size: .68em; line-height: 0; }
+.sub { position: absolute; left: 82px; top: 124px; font-size: 22px; color: var(--mute); }
+.lead { position: absolute; left: 80px; right: 80px; top: 176px; font-size: 30px; line-height: 1.3; }
+.lead.big { font-size: 36px; }
+.txt { font-size: 28px; line-height: 1.3; }
+.txt b { color: var(--acc-d); }
+.note { font-size: 18px; line-height: 1.3; color: var(--mute); }
+.nw { white-space: nowrap; }
+/* inline variable inside a text: <span class="v">P<sub>e</sub></span> */
+.v { font-family: var(--math); font-style: italic; white-space: nowrap; }
+.v .r { font-style: normal; }
+
+/* Lists: <ul class="l"> (30 px) · .s (27 px) · .xs (25 px) */
+ul.l { list-style: none; padding: 0; margin: 0; }
+ul.l > li { position: relative; padding-left: 30px; margin: 0 0 22px; font-size: 30px; line-height: 1.3; }
+ul.l > li::before { content: ""; position: absolute; left: 4px; top: .55em; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--acc); }
+ul.l ul { list-style: none; padding: 0; margin: 8px 0 0; }
+ul.l ul li { position: relative; padding-left: 26px; font-size: 25px; color: var(--ink2); margin-bottom: 4px; }
+ul.l ul li::before { content: "–"; position: absolute; left: 4px; color: var(--mute); }
+ul.l.s > li { font-size: 27px; margin-bottom: 14px; }
+ul.l.xs > li { font-size: 25px; margin-bottom: 12px; }
+ul.l.xs ul li { font-size: 22px; }
+ul.l a { color: var(--acc-d); text-decoration: none; border-bottom: 1px solid var(--acc); }
+
+/* ---------- Layouts ----------
+   .txl   text on the left (780 px) + .fig figure positioned by hand
+   .split text | 560 px figure          .cols2 / .cols3  columns (diagram on top, text below)
+   .punch closing line with the key idea, at the very bottom */
+.txl { position: absolute; left: 80px; top: 178px; width: 780px; }
+.fig { position: absolute; overflow: visible; }
+.split { position: absolute; left: 80px; right: 80px; top: 180px; bottom: 90px; display: grid;
+  grid-template-columns: 1fr 560px; gap: 60px; }
+.split svg { width: 100%; height: 100%; overflow: visible; }
+.cols2 { position: absolute; left: 80px; right: 80px; top: 172px; display: grid; grid-template-columns: 1fr 1fr; gap: 90px; }
+.cols3 { position: absolute; left: 80px; right: 80px; top: 180px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 56px; }
+.cols2 svg, .cols3 svg { display: block; width: 100%; height: auto; overflow: visible; margin: 8px 0 18px; }
+.punch { position: absolute; left: 80px; right: 80px; bottom: 78px; padding-top: 18px;
+  border-top: 1px solid var(--rule); font-size: 29px; color: var(--ink2); }
+.punch b { color: var(--acc-d); }
+.punch small { color: var(--mute); font-size: .8em; }
+
+/* ---------- Cover ---------- */
+.cv { position: absolute; left: 160px; top: 220px; right: 160px; }
+.cv-k { font-size: 24px; letter-spacing: .12em; text-transform: uppercase; color: var(--acc-d); font-weight: 600; }
+.cv h1 { margin: 18px 0 0; font-size: 84px; font-weight: 600; letter-spacing: -.015em; line-height: 1.05; }
+.cv-t { font-size: 32px; color: var(--mute); margin-top: 16px; }
+.cv-rule { width: 120px; height: 4px; background: var(--acc); margin: 50px 0 38px; }
+.cv-ag { display: flex; flex-wrap: wrap; gap: 18px 50px; margin: 0; padding: 0; list-style: none; font-size: 24px; color: var(--ink2); }
+.cv-ag span { color: var(--acc-d); font-weight: 600; margin-right: 10px; }
+.cv-hint { position: absolute; right: 80px; bottom: 60px; font-size: 18px; color: var(--mute); }
+
+/* ---------- SVG diagrams (class .sk on the <svg>) ---------- */
+svg text { font-family: var(--font); fill: var(--ink); }
+.sk .lb { font-size: 19px; fill: var(--ink2); }             /* label */
+.sk .lm { font-size: 16px; fill: var(--mute); }             /* secondary label */
+.sk .vr { font-family: var(--math); font-style: italic; font-size: 22px; fill: var(--ink); } /* variable */
+.sk .vr .r { font-style: normal; }
+.sk .cp { fill: #fff; stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; }   /* component */
+.sk .ln { fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.sk .ld { fill: none; stroke: #b5b5b5; stroke-width: 1.5; }  /* leader line */
+.sk .dh { fill: none; stroke: #9a9a9a; stroke-width: 1.5; stroke-dasharray: 7 6; } /* dashed line */
+.sk .ax { fill: none; stroke: #7a7a7a; stroke-width: 1.8; }  /* axis */
+.sk .axl { fill: none; stroke: #8a8a8a; stroke-width: 1.5; stroke-dasharray: 22 6 4 6; } /* symmetry axis */
+.sk .dimline { fill: none; stroke: var(--ink2); stroke-width: 1.6; } /* dimension */
+.sk .wall { fill: none; stroke: var(--ink); stroke-width: 3.4; stroke-linejoin: round; stroke-linecap: round; }
+.sk .hat { fill: url(#hatch); stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; } /* hatched wall */
+.sk .pp { fill: none; stroke: #e4e4e4; stroke-width: 10; stroke-linejoin: round; stroke-linecap: round; } /* pipe */
+.sk .hl { fill: none; stroke: var(--acc); stroke-width: 4; }  /* highlight box */
+.sk .dot { fill: var(--acc-d); }
+.sk .jet { fill: var(--warm); opacity: .75; }               /* jet (zone) */
+/* Animated flow: drawn on top of the .pp pipe with the same path */
+.sk .fl { fill: none; stroke-width: 4; stroke-linejoin: round; stroke-linecap: round;
+  stroke-dasharray: 9 12; animation: fl .9s linear infinite; }
+.sk .fl.fu { stroke: var(--neg); }
+.sk .fl.ox { stroke: var(--c2); }
+.sk .fl.gs { stroke: #8f8f8f; }
+.sk .fl.hg { stroke: var(--pos); }
+.sk .fl.el { stroke: #8f8f8f; stroke-width: 2.5; stroke-dasharray: 3 7; }
+@keyframes fl { to { stroke-dashoffset: -21; } }
+/* Tanks and grain: example parts for diagrams with fluids or materials
+   (fu · red, ox · blue, gs · gray); adapt or ignore depending on the content */
+.sk .tk-fu { fill: #f8e3e0; stroke: var(--neg); stroke-width: 2.2; }
+.sk .tk-ox { fill: #e0eaf6; stroke: var(--c2); stroke-width: 2.2; }
+.sk .tk-gs { fill: #efefef; stroke: #7a7a7a; stroke-width: 2.2; }
+.sk .grain { fill: #e9e0cd; stroke: #b9a887; stroke-width: 1.5; }
+/* Group highlighted in green with data-hl="steps" */
+.hlg .ln, .hlg .crv, .hlg text { transition: stroke .3s ease, fill .3s ease; }
+.hlg.on .ln, .hlg.on .crv { stroke: var(--acc-d) !important; }
+.hlg.on text { fill: var(--acc-d); }
+
+/* ---------- Effects (only if they explain something) ---------- */
+/* Flame (vertical by default; .h = horizontal, grows to the right) */
+.flame { fill: var(--warm); transform-box: fill-box; transform-origin: 50% 0; animation: flick .16s ease-in-out infinite alternate; }
+.flame.h { transform-origin: 0 50%; animation-name: flickh; }
+@keyframes flick { from { transform: scaleY(.9); opacity: .75; } to { transform: scaleY(1.04); opacity: .95; } }
+@keyframes flickh { from { transform: scaleX(.9); opacity: .75; } to { transform: scaleX(1.04); opacity: .95; } }
+.glow { animation: glow .5s ease-in-out infinite alternate; }
+@keyframes glow { from { opacity: .55; } to { opacity: 1; } }
+/* Jet: puffs that come out in the direction (--dx, --dy) */
+.pf circle { fill: #c3c3c3; animation: pf 1.1s linear infinite; }
+@keyframes pf { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: .9; }
+  100% { transform: translate(var(--dx, 0px), var(--dy, 80px)); opacity: 0; } }
+/* Particle that travels (--dx, --dy) over --t; .slows = arrives braking */
+.part { animation: part var(--t, 1.2s) linear infinite; }
+.part.slows { animation-timing-function: cubic-bezier(.12, .75, .35, 1); }
+@keyframes part { 0% { transform: translate(0, 0); opacity: 0; } 8%, 88% { opacity: 1; }
+  100% { transform: translate(var(--dx, 0px), var(--dy, 0px)); opacity: 0; } }
+/* Cyclic alternation (e.g. valve open / closed): <g class="alt"><g class="fa">…</g><g class="fb">…</g></g> */
+.alt .fa { animation: alt-a 6s linear infinite; }
+.alt .fb { animation: alt-b 6s linear infinite; }
+@keyframes alt-a { 0%, 47% { opacity: 1; } 50%, 97% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes alt-b { 0%, 47% { opacity: 0; } 50%, 97% { opacity: 1; } 100% { opacity: 0; } }
+/* Process with an end: starts at step k and stays in the final state.
+   <g class="once" data-go="k"><rect class="drain" …/></g>  (.drain empties, .stop turns off at the end) */
+.once.go .drain { transform-box: fill-box; transform-origin: 50% 100%; animation: drain 6s ease-in forwards; }
+@keyframes drain { to { transform: scaleY(.08); } }
+.once.go .stop { animation: stop 6s linear forwards; }
+@keyframes stop { 0%, 95% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---------- Charts (class .pl on the <svg>; drawn by chart(), FIGURES block) ---------- */
+.pl .gr { stroke: #eeeeee; stroke-width: 1; }
+.pl .ax { fill: none; stroke: #7a7a7a; stroke-width: 1.8; }
+.pl .tk { font-size: 17px; fill: var(--mute); }
+.pl .al { font-size: 19px; fill: var(--ink2); }
+.pl .crv { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.pl .crv.d { stroke-dasharray: 10 8; stroke-linecap: butt; }
+.pl .crv.th { stroke-width: 2; }
+.pl .crv.fa { stroke: #c9c9c9; }
+.pl .crv.ac { stroke: var(--acc-d); }
+.pl .crv.fu { stroke: var(--neg); }
+.pl .crv.ox { stroke: var(--c2); }
+.pl .crv.or { stroke: var(--c3); }
+.pl .pto { fill: var(--acc-d); }
+.pl .pto.hollow { fill: #fff; stroke: var(--acc-d); stroke-width: 2.5; }
+.pl .pl-l { font-size: 21px; font-weight: 600; fill: var(--acc-d); paint-order: stroke; stroke: #fff; stroke-width: 5px; }
+.pl .cl { font-size: 19px; fill: var(--ink2); paint-order: stroke; stroke: #fff; stroke-width: 5px; }
+.pl .dh { fill: none; stroke: #9a9a9a; stroke-width: 1.5; stroke-dasharray: 7 6; }
+.pl .area { fill: var(--acc); opacity: .22; }
+.pl .bar { fill: var(--acc); }
+/* Curve traced when it appears; bar that grows when it appears */
+.draw { transition: stroke-dashoffset 1.4s ease .1s; }
+.vis .draw, .draw.vis, .static .draw { stroke-dashoffset: 0 !important; }
+.grow { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0); transition: transform .9s ease; }
+.vis .grow, .grow.vis, .static .grow { transform: none; }
+/* Generated nozzle: <g class="noz" data-noz="…"> (FIGURES block) */
+.nz-in { fill: #fbf3e8; }
+.nz-in.cold { fill: #f4f4f4; }
+.nz-w { fill: url(#hatch); stroke: none; }
+.nz-l { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linejoin: round; }
+
+/* ---------- Formulas: <span class="m" data-tex="…"> (sizes: .l 40 · normal 34 · .s 30 · .xs 26 · .xxs 23) ---------- */
+.m { font-family: var(--math); font-size: 34px; display: inline-flex; align-items: center;
+  white-space: nowrap; line-height: 1.2; vertical-align: middle; }
+.m.l { font-size: 40px; } .m.s { font-size: 30px; } .m.xs { font-size: 26px; } .m.xxs { font-size: 23px; }
+.m span { display: inline-flex; align-items: center; }
+.m i { font-style: italic; }
+.m .o { margin: 0 .26em; }
+.m .ss .o { margin: 0 .06em; }
+.m .pw { align-items: stretch; }
+.m .ss { flex-direction: column; justify-content: space-between; align-items: flex-start; font-size: .64em; margin-left: .04em; }
+.m .su { margin-top: -.22em; }
+.m .sb { margin-bottom: -.1em; }
+.m .fr { flex-direction: column; align-items: stretch; margin: 0 .1em; }
+.m .nu, .m .de { justify-content: center; padding: 0 .12em; }
+.m .nu { padding-bottom: .04em; }
+.m .de { border-top: max(1.5px, .055em) solid currentColor; padding-top: .06em; }
+.m .sq { position: relative; padding-left: .62em; align-items: stretch; margin: 0 .05em; }
+.m .sq::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: .64em; background: currentColor;
+  -webkit-mask: var(--rad) 0 0 / 100% 100% no-repeat; mask: var(--rad) 0 0 / 100% 100% no-repeat; }
+.m .rc { border-top: max(1.5px, .055em) solid currentColor; padding: .07em .06em 0 .03em; }
+.m .dl { position: relative; padding: .03em .34em; margin: 0 .03em; }
+.m .dl::before, .m .dl::after { content: ""; position: absolute; top: 0; bottom: 0; width: .3em; background: currentColor;
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.m .dl::before { left: 0; } .m .dl::after { right: 0; }
+.m .pa::before { -webkit-mask-image: var(--pl); mask-image: var(--pl); }
+.m .pa::after { -webkit-mask-image: var(--pr); mask-image: var(--pr); }
+.m .bk::before { -webkit-mask-image: var(--bl); mask-image: var(--bl); }
+.m .bk::after { -webkit-mask-image: var(--br); mask-image: var(--br); }
+.m .br::before { -webkit-mask-image: var(--cl); mask-image: var(--cl); width: .4em; }
+.m .br::after { -webkit-mask-image: var(--cr); mask-image: var(--cr); width: .4em; }
+.m .br { padding: .03em .46em; }
+.m .rm { font-style: normal; }
+.m .tx { font-family: var(--font); font-size: .78em; color: var(--ink2); margin: 0 .35em; }
+.m .ovl { border-top: max(1.5px, .06em) solid currentColor; line-height: 1; padding-top: .04em; }
+.m .int { font-family: "EP Sym", var(--math); font-style: normal; font-size: 1.7em; line-height: 1; margin: 0 .02em 0 .04em; }
+.m .big { font-family: "EP Sym", var(--math); font-style: normal; font-size: 1.45em; line-height: 1; margin: 0 .08em; }
+.m .fn { font-style: normal; margin: 0 .16em 0 .1em; }
+.m .ab { border-left: max(1.5px, .055em) solid currentColor; border-right: max(1.5px, .055em) solid currentColor; padding: 0 .16em; margin: 0 .14em; }
+.m .s1 { width: .17em; } .m .s2 { width: .3em; } .m .s4 { width: 1em; } .m .s6 { width: 2em; }
+/* Green box = formula as it is in the source (\bx{…} or class .res on the span) */
+.m .bx, .m.res { border: 2px solid var(--acc); border-radius: 10px; padding: .16em .42em; background: #fff; }
+.m .bx { margin: 0 .1em; }
+/* \ub[k]{term}{label}: under-bracket below a term with a brief label (what it means).
+   The label widens the column (it does not overlap the neighbor) but does not count in the height: the gap is reserved below */
+.m .ub { flex-direction: column; align-items: center; margin: 0 .08em; }
+.m .ubt { position: relative; }
+.m .ubt::after { content: ""; position: absolute; left: .04em; right: .04em; top: 100%; height: .28em; margin-top: .06em;
+  border: 2px solid var(--acc-d); border-top: 0; border-radius: 0 0 .12em .12em; transition: opacity .45s ease; }
+.m .ubt:has(+ .ubn:not(.vis)[data-in])::after { opacity: 0; }
+.m .ubn { display: block; height: 1em; margin-bottom: -1em; padding-top: .42em; }
+.m .ubl { display: block; font-family: var(--font); font-style: normal; font-size: .56em; line-height: 1.1;
+  white-space: nowrap; color: var(--acc-d); padding: 0 .3em; }
+.m .ubl i { font-family: var(--math); }
+.m:has(.ub), .m .bx:has(.ub) { padding-bottom: 1.05em !important; }
+.m:has(.bx .ub) { padding-bottom: 0 !important; }
+/* Crossed out (\cx, \cz): the slash is drawn a moment after the step appears */
+.m .cx { position: relative; }
+.m .cx > .st { position: absolute; left: -.08em; right: -.08em; top: .04em; bottom: .04em; background: var(--neg);
+  -webkit-mask: var(--slash) 0 0 / 100% 100% no-repeat; mask: var(--slash) 0 0 / 100% 100% no-repeat;
+  clip-path: inset(0 100% 0 0); transition: clip-path .55s ease .35s, opacity .2s ease .35s; }
+.m .cx > .st.vis { clip-path: inset(0 0 0 0); }
+.m .cx:has(> .st.vis) { color: #a3a3a3; }
+.m .cx > .z0 { position: absolute; right: -.25em; top: -.55em; font: 700 .5em var(--font); color: var(--neg);
+  transition: opacity .3s ease .7s; }
+/* Step highlighting (\ha \hb \hc) and fixed colors to group terms (\ca \cb \cc) */
+.m .hi { margin: 0 .08em; border-radius: .16em; transition: background-color .35s ease, box-shadow .35s ease; }
+.m .hi.on { background-color: #e3f1d3; box-shadow: 0 0 0 .1em #e3f1d3; }
+.m .hi.hB.on { background-color: #fbe6cf; box-shadow: 0 0 0 .1em #fbe6cf; }
+.m .hi.hC.on { background-color: #dde8f5; box-shadow: 0 0 0 .1em #dde8f5; }
+.m .cA { color: var(--acc-d); } .m .cB { color: var(--c3); } .m .cC { color: var(--c2); }
+.res.on, .m .bx.on { box-shadow: 0 0 0 5px #e3f1d3; transition: box-shadow .35s ease; }
+
+/* ---------- Derivations: rows "formula | note" (.dv > .rw > .e + .nt) ---------- */
+.dv { position: absolute; left: 80px; right: 80px; top: 176px; display: flex; flex-direction: column; gap: 20px; }
+.rw { display: grid; grid-template-columns: 1fr 380px; column-gap: 36px; align-items: center; }
+.rw.w { grid-template-columns: 1fr; }
+.rw > .e { display: flex; align-items: center; gap: 26px; min-width: 0; }
+.nt { font-size: 23px; line-height: 1.3; color: var(--ink2); border-left: 3px solid var(--acc); padding: 3px 0 3px 14px; }
+.nt b { color: var(--acc-d); }
+.nt .m { font-size: 23px; }
+.nt > .nl { display: block; }
+.nt > .nl + .nl { margin-top: 6px; }
+.lab { font-size: 25px; color: var(--ink2); white-space: nowrap; }
+.tag { display: inline-block; min-width: 34px; font: 600 20px var(--font); color: var(--mute); }
+.ar { font-size: 30px; color: var(--mute); }
+
+/* ---------- Examples and exercises ---------- */
+.ex { position: absolute; left: 80px; top: 176px; width: 880px; }
+.ex p { font-size: 29px; line-height: 1.4; margin: 0 0 14px; }
+.ex ol { margin: 6px 0 0; padding-left: 40px; font-size: 28px; line-height: 1.35; }
+.ex ol li { margin-bottom: 6px; padding-left: 6px; }
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; margin-top: 20px; }
+.chips > span:first-child { font-size: 20px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); margin-right: 4px; }
+.chip { border: 1.5px solid var(--rule); border-radius: 10px; padding: 4px 14px; background: #fff; font-size: 24px; }
+.chip.q { border-color: var(--acc); background: var(--acc-l); }
+.tools { margin-top: 22px; padding: 8px 0 8px 20px; border-left: 5px solid var(--acc); font-size: 26px; line-height: 1.4; color: var(--ink2); }
+.tools b { color: var(--acc-d); }
+.hint { margin-top: 18px; font-size: 26px; color: var(--ink2); }
+
+/* ---------- Explain before deriving or computing ----------
+   .sub.obj   "Objective" line under the title (short derivations)
+   .goal      "Result · Usefulness · Procedure" scene before a long derivation (.gk label,
+              .gf boxed formulas, .gt text, .route steps joined by arrows)
+   .sub.dt    data and what is asked, in the approach of an example; .fx "For X" in front of the formula
+   .card .pq  "Application:" line of a card (preview and recap of the toolbox)
+   .def       box with a brief definition needed in the scene */
+.sub.obj { color: var(--ink2); }
+.sub.obj::before { content: "Objective"; font-size: 17px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--acc-d); margin-right: 12px; }
+.goal { position: absolute; left: 80px; right: 80px; top: 176px; display: flex; flex-direction: column; gap: 34px; }
+.gk { font-size: 19px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; color: var(--acc-d); margin-bottom: 14px; }
+.gf { display: flex; align-items: center; flex-wrap: wrap; gap: 20px 48px; }
+.gt { font-size: 27px; line-height: 1.35; }
+.gt b { color: var(--acc-d); }
+.route { display: flex; align-items: stretch; }
+.route > div { flex: 1; border: 1.5px solid var(--rule); border-radius: 14px; padding: 14px 20px 16px; font-size: 23px;
+  line-height: 1.3; color: var(--ink2); }
+.route > div b { color: var(--acc-d); }
+.route > i { flex: 0 0 44px; align-self: center; text-align: center; font-style: normal; font-size: 28px; color: var(--mute); }
+.route .n { display: block; font-size: 17px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--acc-d); margin-bottom: 6px; }
+.sub.dt { color: var(--ink2); }
+.sub.dt b { color: var(--acc-d); margin-right: 6px; }
+.m.res.earlier { border-style: dashed; border-color: #b5b5b5; }  /* formula from a previous topic */
+.fx { flex: 0 0 170px; font-size: 24px; font-weight: 600; color: var(--acc-d); white-space: nowrap; }
+.card .pq { font-size: 21px; line-height: 1.3; color: var(--ink2); margin: 12px 0 0; }
+.card .pq b { color: var(--acc-d); }
+.cards.numbered { gap: 24px; }
+.numbered .card { display: flex; flex-direction: column; }
+.numbered .card h5 { display: flex; align-items: center; gap: 12px; }
+.numbered .card h5 span { flex: 0 0 32px; height: 32px; border-radius: 50%; background: var(--acc-l); color: var(--acc-d);
+  display: flex; align-items: center; justify-content: center; font-size: 18px; letter-spacing: 0; }
+.numbered .card > .m { align-self: center; margin: auto 0; }
+.def { position: absolute; width: 520px; padding: 8px 16px; border: 1.5px solid var(--acc); border-radius: 10px;
+  background: var(--acc-l); font-size: 19px; line-height: 1.28; color: var(--ink2); }
+.def b { color: var(--acc-d); }
+
+/* ---------- Cards: .cards (3 columns; .two = 2; .four = 4) > .card ---------- */
+.cards { position: absolute; left: 80px; right: 80px; top: 180px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.cards.two { grid-template-columns: 1fr 1fr; gap: 60px; }
+.cards.four { grid-template-columns: repeat(4, 1fr); gap: 26px; }
+.card { border: 1.5px solid var(--rule); border-top: 5px solid var(--acc); border-radius: 10px; padding: 20px 24px 22px; background: #fff; }
+.card h5 { margin: 0 0 14px; font-size: 20px; letter-spacing: .09em; text-transform: uppercase; color: var(--acc-d); font-weight: 600; }
+.card h3 { font-size: 30px; line-height: 1.2; margin: 0 0 12px; }
+.card p { margin: 0 0 12px; font-size: 25px; line-height: 1.3; color: var(--ink2); }
+.card p b { color: var(--ink); }
+.card ul { margin: 0; padding: 0; list-style: none; }
+.card li { position: relative; padding-left: 22px; font-size: 25px; line-height: 1.3; margin-bottom: 8px; color: var(--ink2); }
+.card li::before { content: ""; position: absolute; left: 2px; top: .55em; width: 8px; height: 8px; border-radius: 50%; background: var(--acc); }
+.card .m { display: flex; width: fit-content; }
+.card .m + .m { margin-top: 10px; }
+.card svg { display: block; width: 100%; height: auto; overflow: visible; margin: 4px 0 12px; }
+.card .d { font-size: 17px; color: var(--mute); margin-top: 12px; }
+
+/* ---------- Key data tiles: .tiles > .tile > .big + p ---------- */
+.tiles { position: absolute; left: 80px; right: 80px; top: 360px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; }
+.tile { border-top: 4px solid var(--acc); padding-top: 18px; }
+.tile .big { font-size: 56px; font-weight: 600; line-height: 1.05; white-space: nowrap; }
+.tile .big small { font-size: 28px; font-weight: 400; color: var(--ink2); margin-left: 6px; }
+.tile p { font-size: 24px; line-height: 1.3; color: var(--ink2); margin: 12px 0 0; }
+
+/* ---------- Phases of a process: .flow > .phase (with an arrow between phases) + .band ---------- */
+.flow { position: absolute; left: 80px; right: 80px; top: 180px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px 44px; }
+.phase { position: relative; border-top: 4px solid var(--acc); padding-top: 14px; }
+.phase:not(:last-child)::after { content: ""; position: absolute; right: -32px; top: -8px; border: 8px solid transparent; border-left: 12px solid var(--acc); }
+.phase .n { font-size: 20px; font-weight: 600; color: var(--acc-d); letter-spacing: .08em; }
+.phase h3 { font-size: 30px; margin: 2px 0 12px; }
+.phase ul { list-style: none; margin: 0; padding: 0; }
+.phase li { position: relative; font-size: 23px; line-height: 1.3; color: var(--ink2); margin-bottom: 8px; padding-left: 16px; }
+.phase li::before { content: "–"; position: absolute; left: 0; color: var(--mute); }
+.band { position: absolute; left: 80px; right: 80px; top: 560px; padding: 20px 26px; background: var(--acc-l);
+  display: grid; grid-template-columns: 200px 1fr 1fr 1fr; gap: 30px; font-size: 22px; line-height: 1.3; color: var(--ink2); }
+.band b { display: block; color: var(--ink); font-size: 25px; margin-bottom: 2px; }
+.band .hd { font-size: 20px; letter-spacing: .08em; text-transform: uppercase; color: var(--acc-d); font-weight: 600; padding-top: 4px; }
+
+/* ---------- Quote and photo ---------- */
+.quote { position: absolute; left: 80px; top: 200px; width: 860px; margin: 0; padding-left: 34px;
+  border-left: 4px solid var(--acc); font-size: 31px; line-height: 1.45; font-style: italic; color: var(--ink2); }
+.photo { position: absolute; object-fit: contain; }
+img[data-img]:not([src]) { visibility: hidden; }
+.photo-c { position: absolute; margin: 0; }
+.photo-c img { display: block; width: 100%; height: calc(100% - 30px); object-fit: contain; }
+.photo-c figcaption { font-size: 17px; color: var(--mute); margin-top: 6px; text-align: center; }
+
+/* ---------- Tables: comparison (.cmp, one row per step) and data (.tb) ---------- */
+table.cmp { position: absolute; left: 80px; top: 176px; width: 1440px; border-collapse: collapse; font-size: 25px; line-height: 1.3; }
+.cmp th, .cmp td { text-align: left; vertical-align: top; padding: 13px 18px; border-bottom: 1px solid var(--faint); }
+.cmp thead th { color: var(--acc-d); border-bottom: 2px solid var(--acc); font-weight: 600; }
+.cmp tbody th { font-weight: 600; color: var(--ink2); width: 250px; }
+.cmp .pro, .cmp .con { position: relative; padding-left: 26px; }
+.cmp .pro::before, .cmp .con::before { position: absolute; left: 2px; font-weight: 700; }
+.cmp .pro::before { content: "+"; color: var(--acc-d); }
+.cmp .con::before { content: "−"; color: var(--neg); }
+.cmp small { color: var(--mute); font-size: .8em; }
+.legend { position: absolute; left: 80px; bottom: 76px; font-size: 20px; color: var(--mute); }
+.legend b { color: var(--acc-d); } .legend i { font-style: normal; font-weight: 700; color: var(--neg); }
+table.tb { border-collapse: collapse; font-size: 24px; }
+.tb th { font-weight: 600; color: var(--acc-d); border-bottom: 2px solid var(--acc); padding: 6px 16px; text-align: right; }
+.tb td { padding: 4px 16px; text-align: right; border-bottom: 1px solid var(--faint); font-variant-numeric: tabular-nums; }
+.tb th:first-child, .tb td:first-child { text-align: left; }
+.tb tr.on td { background: var(--acc-l); }
+
+/* ---------- Magnitude bars: .bars > .bf (photo | name | bar); --w = % of the width ---------- */
+.bars { position: absolute; left: 80px; width: 1440px; top: 182px; }
+.bars .bf { display: grid; grid-template-columns: 150px 360px 1fr; align-items: center; gap: 34px;
+  height: 196px; border-bottom: 1px solid var(--faint); }
+.bars .bf img { width: 150px; height: 176px; object-fit: contain; }
+.bars .bn { font-size: 32px; } .bars .bn small { display: block; font-size: 21px; color: var(--mute); margin-top: 6px; }
+.bars .bb { position: relative; height: 46px; }
+.bars .bb i { position: absolute; left: 0; top: 0; height: 100%; width: var(--w); background: var(--acc); transition: width 1.1s ease .2s; }
+.bars .bb span { position: absolute; left: calc(var(--w) + 18px); top: 50%; transform: translateY(-50%);
+  font-size: 27px; white-space: nowrap; transition: left 1.1s ease .2s; }
+.bars .bb span em { font-style: normal; color: var(--mute); font-size: 22px; margin-left: 8px; }
+.scene:not(.active) .bars .bb i { width: 0; }
+.scene:not(.active) .bars .bb span { left: 18px; }
+
+/* ---------- Camera view (the SVG zooms into a zone on each step; states in CAMERA) ---------- */
+#cam { position: absolute; left: 80px; top: 150px; width: 1440px; height: 640px; }
+#cam .bx { fill: #fff; stroke: #b5b5b5; stroke-width: 1.8; transition: fill .4s, stroke .4s; }
+#cam text { text-anchor: middle; dominant-baseline: central; font-size: 24px; }
+#cam g { transition: opacity .5s; }
+#cam g.dim { opacity: .22; }
+#cam g.focus .bx { stroke: var(--acc-d); stroke-width: 3; fill: var(--acc-l); }
+.cap { position: absolute; left: 80px; right: 80px; top: 800px; text-align: center; font-size: 26px; color: var(--ink2); }
+
+/* ---------- Class questions (.qs scenes, id q-…; not source material) ---------- */
+.qs-bg { position: absolute; right: 110px; top: 110px; font-size: 600px; font-weight: 700; line-height: 1;
+  color: #f2f8ea; pointer-events: none; }
+.qz { position: absolute; left: 80px; top: 150px; width: 1120px; }
+.qz-k { display: flex; align-items: center; gap: 14px; font-size: 20px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--acc-d); font-weight: 600; }
+.qz-k i { width: 42px; height: 42px; border-radius: 50%; background: var(--acc); color: #fff; font-style: normal;
+  font-size: 28px; display: grid; place-items: center; letter-spacing: 0; }
+.qz-q { margin: 22px 0 0; font-size: 48px; font-weight: 600; line-height: 1.2; letter-spacing: -.005em; }
+.qz-c { margin: 16px 0 0; font-size: 27px; color: var(--ink2); }
+.qz-op { display: flex; gap: 24px; margin-top: 38px; }
+.qz-op > div { position: relative; padding: 14px 28px; border: 1.5px solid var(--rule); border-radius: 12px;
+  font-size: 28px; background: #fff; white-space: nowrap; }
+.qz-op > div > b { color: var(--acc-d); margin-right: 12px; }
+.qz-op .okm { position: absolute; inset: -2px; border: 3px solid var(--acc); border-radius: 12px;
+  background: rgba(146, 208, 80, .14); pointer-events: none; }
+.qz-h { margin-top: 36px; font-size: 29px; color: var(--ink2); }
+.qz-h b { color: var(--acc-d); margin-right: 8px; }
+.qz-a { margin-top: 40px; padding: 4px 0 4px 28px; border-left: 5px solid var(--acc); }
+.qz-a h5 { margin: 0 0 10px; font-size: 19px; letter-spacing: .09em; text-transform: uppercase; color: var(--acc-d); font-weight: 600; }
+.qz-a p { margin: 0 0 12px; font-size: 29px; line-height: 1.35; }
+.qz-img { position: absolute; right: 80px; top: 150px; width: 380px; height: 620px; object-fit: contain; }
+.qz-f { position: absolute; left: 80px; right: 80px; bottom: 78px; padding-top: 16px;
+  border-top: 1px solid var(--rule); font-size: 27px; color: var(--ink2); }
+.qz-f b { color: var(--acc-d); }
+
+/* ---------- Overlays: help, index, black (do not touch) ---------- */
+.ov { position: absolute; inset: 0; z-index: 20; background: rgba(255,255,255,.94); display: none;
+  align-items: center; justify-content: center; }
+.ov.open { display: flex; }
+.ov .box { width: 760px; border-top: 4px solid var(--acc); padding: 34px 44px 30px; background: #fff;
+  box-shadow: 0 2px 30px rgba(0,0,0,.08); }
+.ov h3 { font-size: 30px; margin: 0 0 18px; }
+.ov table { border-collapse: collapse; width: 100%; font-size: 22px; }
+.ov td { padding: 7px 0; border-bottom: 1px solid var(--faint); }
+.ov td:first-child { color: var(--ink2); width: 55%; }
+.ov p { font-size: 19px; color: var(--mute); margin: 20px 0 0; }
+/* Index (I): sections that expand into their scenes. ↑↓ move · → expand · ← collapse · Enter go */
+#idx .box { width: 980px; max-height: 800px; display: flex; flex-direction: column; }
+#idx .box > p { margin: -10px 0 12px; font-size: 16px; }
+#idx ol { margin: 0; padding: 0 8px 0 0; list-style: none; overflow-y: auto; }
+#idx .it { display: flex; align-items: baseline; gap: 12px; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+#idx .it:hover { background: var(--faint); }
+#idx .it.sel { background: var(--acc-l); box-shadow: inset 3px 0 0 var(--acc); }
+#idx .it .nm { flex: 1; }
+#idx .it .pg { color: var(--mute); font-size: .82em; font-variant-numeric: tabular-nums; }
+#idx .s > .it { font-size: 21px; padding: 4px 10px; border-bottom: 1px solid var(--faint); border-radius: 0; }
+#idx .s > .it .tg { flex: 0 0 18px; color: var(--mute); font-size: 15px; transition: transform .2s ease; }
+#idx .s.open > .it .tg { transform: rotate(90deg); }
+#idx .s ol { display: none; overflow: visible; padding: 2px 0 6px 30px; }
+#idx .s.open ol { display: block; }
+#idx .s ol .it { font-size: 18px; color: var(--ink2); padding: 3px 10px; }
+#idx .here > .it, #idx .it.here { color: var(--acc-d); font-weight: 600; }
+/* ?debug: safe area (y from 170 to 790) and boxes whose content overflows (red outline) */
+.debug #stage::after { content: ""; position: absolute; left: 80px; right: 80px; top: 170px; height: 620px; z-index: 30;
+  outline: 2px dashed rgba(192, 57, 43, .45); pointer-events: none; }
+.debug .overflow { outline: 3px solid var(--neg) !important; outline-offset: 2px; }
+.static *, .static *::before { transition: none !important; }
+#blank { position: fixed; inset: 0; background: #000; z-index: 50; display: none; }
+#blank.on { display: block; }
+
+/* =====================================================================
+   SPECIFIC TO THIS PRESENTATION (new classes here, with a comment saying which
+   scene they are for; before creating one, search with grep that the name does not already exist)
+   ===================================================================== */
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- Shared definitions: arrowheads (marker-end="url(#mk-g)") and patterns.
+       mk-g green · mk-k gray · mk-i black · mk-h medium green · mk-o blue · mk-f red
+       fill="url(#hatch)" hatched (wall, solid) · url(#check) checks (filter) · url(#gr-noz) warm gradient -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <marker id="mk-g" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#4f7d1e"/></marker>
+      <marker id="mk-k" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#8a8a8a"/></marker>
+      <marker id="mk-i" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#1f1f1f"/></marker>
+      <marker id="mk-h" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.5" markerHeight="3.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#74a83a"/></marker>
+      <marker id="mk-o" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.5" markerHeight="3.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#2e6bb0"/></marker>
+      <marker id="mk-f" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.5" markerHeight="3.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#c0392b"/></marker>
+      <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#fff"/><line x1="0" y1="0" x2="0" y2="8" stroke="#a5a5a5" stroke-width="3"/></pattern>
+      <pattern id="check" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#fff"/><rect width="5" height="5" fill="#bdbdbd"/><rect x="5" y="5" width="5" height="5" fill="#bdbdbd"/></pattern>
+      <linearGradient id="gr-noz" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#f7cf8f"/><stop offset=".55" stop-color="#fbe6c6"/><stop offset="1" stop-color="#fffaf2"/></linearGradient>
+    </defs>
+  </svg>
+  <div id="kicker">Short title<span id="sec"></span></div>
+  <div id="acronyms"></div>
+
+  <!-- ============================================================
+       COVER (the "cover" id hides the top frame)
+       ============================================================ -->
+  <section class="scene" id="cover">
+    <div class="cv">
+      <div class="cv-k">Block or context</div>
+      <h1>Presentation title</h1>
+      <div class="cv-t">Brand or subject</div>
+      <div class="cv-rule"></div>
+      <ol class="cv-ag">
+        <li><span>1</span>First part</li>
+        <li><span>2</span>Second part</li>
+        <li><span>3</span>Third part</li>
+      </ol>
+    </div>
+    <div class="cv-hint">→ next · ? help</div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "list": bullet list + figure next to it (.split).
+       For: a bullet slide with a simple drawing.
+       Each point enters on its step (data-in="k"); the figure reacts to the same steps.
+       ============================================================ -->
+  <section class="scene" id="list" data-section="List and figure" data-ref="Slide 2">
+    <h2>Title that says what is done</h2>
+    <div class="split">
+      <ul class="l">
+        <li class="up" data-in="0">First point, as it is in the source
+          <ul>
+            <li>Source subpoint</li>
+            <li>Another source subpoint</li>
+          </ul>
+        </li>
+        <li class="up" data-in="1">Second point, with the <b>key idea</b> in bold</li>
+        <li class="up" data-in="2">Third point: on this step the figure shows the flow and the result</li>
+      </ul>
+      <svg class="sk" viewBox="0 0 560 640" aria-label="A system with input, process and result">
+        <path class="pp" d="M70 300 H130 M430 300 H510"/>
+        <rect class="cp" x="130" y="220" width="300" height="160" rx="16"/>
+        <text class="lb" x="280" y="310" text-anchor="middle">Process</text>
+        <g data-in="1"><rect class="hl" x="116" y="206" width="328" height="188" rx="20"/></g>
+        <g data-in="2">
+          <path class="fl gs" d="M70 300 H130 M430 300 H510"/>
+          <g class="pf" style="--dx:110px;--dy:0px">
+            <circle cx="70" cy="300" r="8"/><circle cx="70" cy="286" r="6" style="animation-delay:-.35s"/>
+            <circle cx="70" cy="314" r="7" style="animation-delay:-.7s"/>
+          </g>
+          <line x1="280" y1="440" x2="280" y2="560" stroke="#4f7d1e" stroke-width="4" marker-end="url(#mk-g)"/>
+          <text class="lb" x="300" y="510">Result</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "diagram": animated SVG diagram assembled step by step.
+       For: systems with components and flows (feed, cycles, engines).
+       data-out="k" removes something on step k; data-go="k" starts a process with
+       an end (here the tank empties and the engine stops).
+       data-refs: reference for each step (separated by |), if they vary.
+       ============================================================ -->
+  <section class="scene" id="diagram" data-section="Diagram" data-ref="Slide 3"
+           data-refs="Slide 3|Slide 3|Slide 3|Slide 4">
+    <h2>Example diagram</h2>
+    <div class="sub">Brief subtitle (from the source)</div>
+    <svg class="fig sk" style="left:80px;top:190px;width:1440px;height:520px" viewBox="0 0 1440 520" aria-label="Tank, valve and process">
+      <!-- pipes (background) and flows (on top, same path) -->
+      <path class="pp" d="M280 250 H760"/>
+      <g data-in="1"><g class="once" data-go="3"><g class="stop"><path class="fl gs" d="M280 250 H760"/></g></g></g>
+      <!-- components -->
+      <rect class="tk-gs" x="80" y="110" width="200" height="280" rx="40"/>
+      <g class="once" data-go="3"><rect class="drain" x="92" y="130" width="176" height="248" rx="30" fill="#dcdcdc"/></g>
+      <text class="lb" x="180" y="430" text-anchor="middle">Tank</text>
+      <path class="cp" d="M500 226 L540 274 V226 L500 274 Z"/>
+      <text class="lb" x="520" y="206" text-anchor="middle">Valve</text>
+      <rect class="cp" x="760" y="170" width="420" height="160" rx="16"/>
+      <text class="lb" x="970" y="380" text-anchor="middle">Process</text>
+      <!-- operation: active zone and output (they turn off when the tank empties) -->
+      <g data-in="2"><g class="once" data-go="3"><g class="stop">
+        <rect class="glow" x="786" y="192" width="368" height="116" fill="#eef6e4"/>
+        <g class="pf" style="--dx:200px;--dy:0px">
+          <circle cx="1200" cy="250" r="9"/><circle cx="1200" cy="236" r="6" style="animation-delay:-.3s"/>
+          <circle cx="1200" cy="264" r="7" style="animation-delay:-.6s"/><circle cx="1200" cy="246" r="5" style="animation-delay:-.85s"/>
+        </g>
+      </g></g></g>
+      <g data-in="2">
+        <line x1="980" y1="470" x2="760" y2="470" stroke="#4f7d1e" stroke-width="4" marker-end="url(#mk-g)"/>
+        <text class="lb" x="1000" y="477">Result</text>
+      </g>
+      <!-- leader line that is only on step 1 -->
+      <g data-in="1" data-out="2">
+        <rect class="hl" x="484" y="212" width="72" height="76" rx="6"/>
+        <path class="ld" d="M556 230 L610 150"/>
+        <text class="lb" x="616" y="142">Brief source note about this component</text>
+      </g>
+    </svg>
+    <div class="punch up" data-in="3">Closing line with the <b>key idea</b> of the scene</div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "objective": what will be obtained, what for and how, BEFORE a long derivation.
+       For: the scene before any derivation longer than one scene (short ones just need
+       the <div class="sub obj"> line under the title of the derivation itself).
+       Result = final boxed formula (.res) · Usefulness = what it allows to compute ·
+       Procedure = the route in 2-4 steps (.route), in words, without arrow chains.
+       ============================================================ -->
+  <section class="scene" id="objective" data-section="Geometric progression" data-ref="Slide 5">
+    <h2>Sum of a geometric progression</h2>
+    <div class="sub">Result, usefulness and procedure of the derivation</div>
+    <div class="goal">
+      <div class="up" data-in="0"><div class="gk">Result</div>
+        <div class="gf"><span class="m res" data-tex="S_n = a_1\,\fr{1 - r^n}{1 - r}"></span></div></div>
+      <div class="up" data-in="0"><div class="gk">Usefulness</div>
+        <div class="gt">With the <b>first term</b>, the <b>ratio</b> and the <b>number of terms</b>, it gives the sum of the whole progression, without adding term by term</div></div>
+      <div class="up" data-in="1"><div class="gk">Procedure</div>
+        <div class="route">
+          <div><span class="n">Step 1</span>The sum is written and <b>multiplied by the ratio</b></div><i>→</i>
+          <div><span class="n">Step 2</span>The two expressions are subtracted: the <b>intermediate terms cancel out</b></div><i>→</i>
+          <div><span class="n">Step 3</span>It is factored and the sum is <b>solved for</b></div>
+        </div></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "derivation": where a formula comes from, row by row.
+       For: slides with equations (never present the formula "out of nowhere").
+       .sub.obj = "Objective:" on one line (if it comes right after an "objective" scene,
+       it can be removed). Each .rw row = formula (.e) + specific note (.nt),
+       to read row by row: what is substituted, what is simplified and why.
+       \cx[k]{…} crosses out on step k · \bx{…} green box = formula as it is
+       on the slide (only the final formula, not the whole chain of equalities) ·
+       \ub[k]{term}{label} bracket with its meaning · \ha[k]{…} highlights · \in[k]{…} appears.
+       Full syntax in reference/formulas.md.
+       ============================================================ -->
+  <section class="scene" id="derivation" data-section="Geometric progression" data-ref="Slide 5">
+    <h2>Sum of a geometric progression</h2>
+    <div class="sub obj">Obtain the sum of the first n terms of a geometric progression</div>
+    <div class="dv">
+      <div class="rw up" data-in="0">
+        <div class="e"><span class="m" data-tex="S_n = a_1 + a_1 r + a_1 r^2 + \ldots + a_1 r^{n-1}"></span></div>
+        <div class="nt"><b>Definition</b> of the sum of the first n terms</div>
+      </div>
+      <div class="rw up" data-in="1">
+        <div class="e"><span class="m" data-tex="r\,S_n = \ub[2]{a_1 r + a_1 r^2 + \ldots + a_1 r^{n-1}}{terms that cancel out} + a_1 r^n"></span></div>
+        <div class="nt">Both sides are multiplied by the <b>ratio</b> <span class="v">r</span></div>
+      </div>
+      <div class="rw up" data-in="2">
+        <div class="e"><span class="m" data-tex="S_n\pa{1 - r} = a_1\pa{1 - r^n}"></span></div>
+        <div class="nt">When the two expressions are <b>subtracted</b>, the intermediate terms cancel in pairs</div>
+      </div>
+      <div class="rw up" data-in="3">
+        <div class="e"><span class="m" data-tex="\bx{S_n = a_1\,\fr{1 - r^n}{1 - r}}"></span></div>
+        <div class="nt"><span class="v">S<sub>n</sub></span> and <span class="nw">1 − <span class="v">r</span></span> are factored out, and the sum is <b>solved for</b></div>
+      </div>
+    </div>
+    <div class="punch up" data-in="3">The sum of n terms is obtained with a <b>single operation</b></div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "example": statement + data and what is asked (tiles) + figure.
+       For: examples and exercises from the source (literal statement; do not solve it if the source does not).
+       All practice (statement, approach, solution) carries class="scene pr" (blue)
+       and title "Example: …". On the right goes a figure specific to the content (here, a
+       timeline drawn by hand; in other subjects it can be a diagram or a photo).
+       ============================================================ -->
+  <section class="scene pr" id="example" data-section="Example" data-ref="Slide 6">
+    <h2>Example: final capital with compound interest</h2>
+    <div class="ex">
+      <p><span class="nw">2,000&nbsp;€</span> is deposited at a compound interest of <span class="nw">3&nbsp;%</span> per year.</p>
+      <p><b>Compute the final capital after 10 years.</b></p>
+      <div class="chips up" data-in="1"><span>Data</span>
+        <span class="chip"><span class="m xs" data-tex="C_0 = 2000\,\rm{€}"></span></span>
+        <span class="chip"><span class="m xs" data-tex="i = 0.03"></span></span>
+        <span class="chip"><span class="m xs" data-tex="n = 10"></span></span>
+      </div>
+      <div class="chips up" data-in="1"><span>Find</span>
+        <span class="chip q"><span class="m xs" data-tex="C_{10}"></span></span>
+      </div>
+    </div>
+    <svg class="fig sk" style="left:990px;top:250px;width:560px;height:330px" viewBox="0 0 560 330" aria-label="Timeline of the deposit">
+      <path d="M80 170 H480" class="ln" marker-end="url(#mk-i)"/>
+      <path d="M80 120 V220" class="dh"/>
+      <text class="vr" x="60" y="100">C<tspan baseline-shift="sub" font-size="15">0</tspan></text>
+      <text class="lb" x="80" y="250" text-anchor="middle">Year 0</text>
+      <text class="vr" x="425" y="100">C<tspan baseline-shift="sub" font-size="15">10</tspan> = ?</text>
+      <text class="lb" x="480" y="250" text-anchor="middle">Year 10</text>
+    </svg>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "approach": which formulas are needed and why, BEFORE solving.
+       For: each example or exercise that is solved. .sub.dt = data and what is asked;
+       one row per unknown: "For X" (.fx) + boxed formula as in the theory
+       (.res) + note with why it can be used. .punch = order of computation.
+       ============================================================ -->
+  <section class="scene pr" id="approach" data-section="Example" data-ref="Slide 6">
+    <h2>Approach: necessary expressions</h2>
+    <div class="sub dt"><b>Data</b> <span class="v">C</span><sub>0</sub> = 2,000&nbsp;€ · <span class="v">i</span> = 3&nbsp;% per year · <span class="v">n</span> = 10 years &nbsp;&nbsp; <b>Find</b> <span class="v">C</span><sub>10</sub></div>
+    <div class="dv" style="gap:40px">
+      <div class="rw up" data-in="0">
+        <div class="e"><span class="fx">For <span class="v">C</span><sub>10</sub></span><span class="m res" data-tex="C_n = C_0\pa{1+i}^n"></span></div>
+        <div class="nt">Each year the capital is multiplied by the factor <span class="nw"><span class="v">(1 + i)</span></span>: interest is computed on the <b>accumulated capital</b></div>
+      </div>
+      <div class="rw up" data-in="1">
+        <div class="e"><span class="m res" data-tex="i = \fr{3}{100} = 0.03"></span></div>
+        <div class="nt">The rate is used in <b>decimal form</b> before substituting</div>
+      </div>
+    </div>
+    <div class="punch up" data-in="1">Order of computation: convert the rate to decimal form and <b>substitute</b> into the compound interest expression</div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "solution": numerical solution, row by row (.dv), in blue.
+       For: the solution of an example, after its approach. .tag numbers each
+       unknown; the starting boxed formula is repeated (.res) and the result goes in \bx{…}.
+       Each note says what is substituted or solved for.
+       ============================================================ -->
+  <section class="scene pr" id="solution" data-section="Example" data-ref="Slide 6">
+    <h2>Solution: final capital</h2>
+    <div class="sub">Annual compound interest</div>
+    <div class="dv" style="gap:16px">
+      <div class="rw up" data-in="0">
+        <div class="e"><span class="tag">1</span><span class="m res" data-tex="C_n = C_0\pa{1+i}^n"></span></div>
+        <div class="nt"><span class="v">C<sub>n</sub></span>: <b>final capital</b> with compound interest</div>
+      </div>
+      <div class="rw up" data-in="1">
+        <div class="e"><span class="tag"></span><span class="m s" data-tex="C_{10} = 2000\cdot\pa{1 + 0.03}^{10}"></span></div>
+        <div class="nt"><span class="v">C<sub>0</sub></span>, <span class="v">i</span> and <span class="v">n</span> are substituted; inside the parentheses, <span class="nw"><span class="v">1 + 0.03</span> = 1.03</span></div>
+      </div>
+      <div class="rw up" data-in="2">
+        <div class="e"><span class="tag"></span><span class="m s" data-tex="C_{10} = 2000\cdot 1.03^{10} \;\Rightarrow\; \bx{C_{10} \approx 2687.83\,\rm{€}}"></span></div>
+        <div class="nt">The factor <span class="nw"><span class="v">(1 + i)^n</span></span> <b>accumulates</b> the interest of the ten years</div>
+      </div>
+    </div>
+    <div class="punch up" data-in="2">Each year the interest is added to the capital and generates <b>new interest</b></div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "chart": chart computed with chart() (FIGURES block).
+       For: curves from the source (with their formula or with points read from the figure).
+       The <svg> is empty: chart('#g-example', {…}) sets axes, curves and points,
+       each on its step.
+       ============================================================ -->
+  <section class="scene" id="chart" data-section="Chart" data-ref="Slide 9">
+    <h2>Capital growth</h2>
+    <div class="txl" style="width:560px">
+      <ul class="l s">
+        <li class="up" data-in="0">The capital grows in a <b>multiplicative</b> way, not linearly</li>
+        <li class="up" data-in="1">In year 10 the accumulated factor is <span class="nw">1.34</span></li>
+        <li class="up" data-in="2">With a higher rate the curve separates quickly</li>
+      </ul>
+    </div>
+    <svg id="g-example" class="fig pl" style="left:700px;top:160px;width:840px;height:620px" viewBox="0 0 840 620" aria-label="Accumulated capital versus time"></svg>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "compare": table, one row per step (.pro advantage, .con disadvantage).
+       For: advantages / disadvantages, or features of several types.
+       ============================================================ -->
+  <section class="scene" id="compare" data-section="Comparison" data-ref="Slide 7 and 8">
+    <h2>A versus B</h2>
+    <table class="cmp">
+      <thead><tr><th></th><th>A</th><th>B</th></tr></thead>
+      <tbody>
+        <tr class="up" data-in="0"><th>Criterion 1</th><td class="pro">Advantage of A <small>(source data)</small></td><td class="con">Disadvantage of B</td></tr>
+        <tr class="up" data-in="1"><th>Criterion 2</th><td class="con">Disadvantage of A</td><td class="pro">Advantage of B</td></tr>
+        <tr class="up" data-in="2"><th>Criterion 3</th><td>Neutral</td><td>Neutral</td></tr>
+      </tbody>
+    </table>
+    <div class="legend up" data-in="0"><b>+</b> advantage · <i>−</i> disadvantage</div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "cards": 2, 3 or 4 cards (.cards.two / .cards / .cards.four).
+       For: overview of a topic, types in parallel, formula summary.
+       ============================================================ -->
+  <section class="scene" id="cards" data-section="Cards" data-ref="Slides 10–12" data-acronyms="<b>sp</b>: <i>specific</i> (<i>I</i><sub>sp</sub>, specific impulse)">
+    <h2>Three types in parallel</h2>
+    <div class="cards">
+      <div class="card up" data-in="0">
+        <h5>Type 1</h5>
+        <p>Brief definition, from the source</p>
+        <ul><li>Feature from the source</li><li>Another feature</li></ul>
+      </div>
+      <div class="card up" data-in="1">
+        <h5>Type 2</h5>
+        <p>Brief definition, from the source</p>
+        <span class="m s" data-tex="I_{\rm{sp}} = \fr{T}{\md\,g_o}"></span>
+      </div>
+      <div class="card up" data-in="2">
+        <h5>Type 3</h5>
+        <p>Brief definition, from the source</p>
+        <ul><li>Feature from the source</li></ul>
+      </div>
+    </div>
+    <div class="punch up" data-in="3">Sentence that <b>connects</b> the three types</div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "toolbox": cards with boxed formula + "Application:".
+       For: "Preview: toolbox for Part N" (after the index of each part: the formulas
+       that will be obtained and what they are for) and "Recap: toolbox" (at the end
+       of a part; no numbers in h5 and no slide references in the text).
+       6 cards in two rows: style="grid-template-rows:1fr 1fr;height:560px" on .cards.
+       ============================================================ -->
+  <section class="scene" id="toolbox" data-section="Introduction" data-ref="Slides 2–13">
+    <h2>Preview: toolbox for Part 1</h2>
+    <div class="sub">Expressions derived next, with their application</div>
+    <div class="cards numbered" style="top:176px">
+      <div class="card up" data-in="0"><h5><span>1</span>General term</h5>
+        <span class="m s" data-tex="a_n = a_1\,r^{n-1}"></span>
+        <div class="pq"><b>Application:</b> value of the term in position n</div></div>
+      <div class="card up" data-in="0"><h5><span>2</span>Sum of n terms</h5>
+        <span class="m s" data-tex="S_n = a_1\,\fr{1 - r^n}{1 - r}"></span>
+        <div class="pq"><b>Application:</b> sum of the progression without adding term by term</div></div>
+      <div class="card up" data-in="1"><h5><span>3</span>Multiplicative growth</h5>
+        <span class="m s" data-tex="C_n = C_0\pa{1 + i}^n"></span>
+        <div class="pq"><b>Application:</b> final capital with compound interest</div></div>
+    </div>
+    <div class="punch up" data-in="2">With these expressions the <b>examples of the part</b> are solved</div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "tiles": large key figures (.tiles > .tile).
+       For: data, dates, typical values (very useful in project presentations).
+       ============================================================ -->
+  <section class="scene" id="tiles" data-section="Key figures" data-ref="Slide 13">
+    <h2>Key figures</h2>
+    <div class="lead">A sentence that presents the data, as it is in the source.</div>
+    <div class="tiles">
+      <div class="tile up" data-in="0"><div class="big">1.34<small>×</small></div><p>Accumulated factor after 10 years</p></div>
+      <div class="tile up" data-in="1"><div class="big">3<small>%</small></div><p>Annual interest rate of the example</p></div>
+      <div class="tile up" data-in="2"><div class="big">10<small>years</small></div><p>Investment period</p></div>
+      <div class="tile up" data-in="3"><div class="big">Dec&nbsp;9</div><p>Date or data with supporting text</p></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "phases": process in phases (.flow > .phase) + final band (.band).
+       For: procedures, stages of a job, operating sequences.
+       ============================================================ -->
+  <section class="scene" id="phases" data-section="Phases" data-ref="Slide 14">
+    <h2>Phases of a process</h2>
+    <div class="flow">
+      <div class="phase up" data-in="0"><div class="n">1</div><h3>First</h3>
+        <ul><li>What is done in this phase</li><li>Another detail</li></ul></div>
+      <div class="phase up" data-in="1"><div class="n">2</div><h3>Second</h3>
+        <ul><li>What is done in this phase</li></ul></div>
+      <div class="phase up" data-in="2"><div class="n">3</div><h3>Third</h3>
+        <ul><li>What is done in this phase</li></ul></div>
+      <div class="phase up" data-in="3"><div class="n">4</div><h3>Fourth</h3>
+        <ul><li>What is done in this phase</li></ul></div>
+    </div>
+    <div class="band up" data-in="4">
+      <div class="hd">And also</div>
+      <div><b>Aspect 1</b>Brief explanation</div>
+      <div><b>Aspect 2</b>Brief explanation</div>
+      <div><b>Aspect 3</b>Brief explanation</div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "bars": horizontal bars with photo (--w = % of the usable width).
+       For: comparing magnitudes of several elements (engine thrust, Isp…).
+       img data-img="name" takes the photo from IMG (tools/images.py).
+       ============================================================ -->
+  <section class="scene" id="bars" data-section="Magnitudes" data-ref="Slide 15">
+    <h2>Comparison of magnitudes</h2>
+    <div class="sub">What is compared (from the source)</div>
+    <div class="bars">
+      <div class="bf"><img data-img="" alt=""><div class="bn"><b>Element A</b><small>Secondary data</small></div>
+        <div class="bb" style="--w:50%"><i></i><span>1.5&nbsp;MN <em>≈ conversion</em></span></div></div>
+      <div class="bf"><img data-img="" alt=""><div class="bn"><b>Element B</b><small>Secondary data</small></div>
+        <div class="bb" style="--w:15%"><i></i><span>0.45&nbsp;MN</span></div></div>
+      <div class="bf"><img data-img="" alt=""><div class="bn"><b>Element C</b><small>Secondary data</small></div>
+        <div class="bb" style="--w:60%"><i></i><span>1.8&nbsp;MN</span></div></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "camera": a large SVG; on each step the view zooms into a zone.
+       For: trees, classifications, maps (states in CAMERA, block 3).
+       ============================================================ -->
+  <section class="scene" id="camera" data-section="Overview" data-ref="Slide 17">
+    <h2>Classification</h2>
+    <svg id="cam" viewBox="0 0 1440 640" aria-label="Classification">
+      <path d="M720 110 V160 M300 160 H1140 M300 160 V230 M720 160 V230 M1140 160 V230" fill="none" stroke="#bdbdbd" stroke-width="2"/>
+      <g data-k="root"><rect class="bx" x="600" y="50" width="240" height="60" rx="8"/><text x="720" y="80">Root</text></g>
+      <g data-k="a"><rect class="bx" x="190" y="230" width="220" height="60" rx="8"/><text x="300" y="260">Branch A</text></g>
+      <g data-k="b"><rect class="bx" x="610" y="230" width="220" height="60" rx="8"/><text x="720" y="260">Branch B</text></g>
+      <g data-k="c"><rect class="bx" x="1030" y="230" width="220" height="60" rx="8"/><text x="1140" y="260">Branch C</text></g>
+    </svg>
+    <div class="cap" id="cam-cap"></div>
+  </section>
+
+  <!-- ============================================================
+       COMPONENT "question": question for the class, with hint and answer.
+       For: pauses for thinking, ONLY if the user asks for them (they are not source material).
+       id starts with q-, class qs, data-section = that of the neighboring scene.
+       Question → (hint) → answer → sentence that links to the next.
+       ============================================================ -->
+  <section class="scene qs" id="q-example" data-section="Overview" data-ref="Class question · not from the source">
+    <div class="qs-bg">?</div>
+    <div class="qz">
+      <div class="qz-k"><i>?</i>Question</div>
+      <p class="qz-q">What prevents an airplane from climbing higher?</p>
+      <p class="qz-c">A passenger airplane flies at about 11&nbsp;km; the International Space Station, at about 400&nbsp;km.</p>
+      <p class="qz-h up" data-in="1"><b>Hint:</b>what does the engine need besides fuel?</p>
+      <div class="qz-a up" data-in="2">
+        <h5>Answer</h5>
+        <p>The higher it climbs, the <b>less air</b> there is: the wings provide less lift and the engine <b>runs out of oxygen</b>.</p>
+      </div>
+    </div>
+    <div class="qz-f up" data-in="3">The rocket carries <b>its own oxidizer</b>: it does not need air.</div>
+  </section>
+
+  <!-- ============================================================
+       SUMMARY
+       ============================================================ -->
+  <section class="scene" id="summary" data-section="Summary" data-ref="Slide 16">
+    <h2>Summary</h2>
+    <div class="txl" style="width:1440px">
+      <ul class="l">
+        <li class="up" data-in="0">Idea 1 from the source</li>
+        <li class="up" data-in="1">Idea 2 from the source</li>
+        <li class="up" data-in="2">Idea 3 from the source</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Bottom frame -->
+  <div id="foot">
+    <span id="brand">Brand or subject</span>
+    <span class="sp"></span>
+    <span id="ref"></span>
+    <span id="nav"><button id="prev" title="Previous (←)">‹</button><span id="count"></span><button id="next" title="Next (→)">›</button></span>
+  </div>
+  <div id="bar"><i></i></div>
+
+  <!-- Help -->
+  <div id="help" class="ov"><div class="box">
+    <h3>Controls</h3>
+    <table>
+      <tr><td>→ · Space · Page Down · click</td><td>Next</td></tr>
+      <tr><td>← · Page Up</td><td>Previous</td></tr>
+      <tr><td>Home · End</td><td>Go to the beginning · the end</td></tr>
+      <tr><td>I</td><td>Index (↑↓ · → expand · Enter go)</td></tr>
+      <tr><td>F</td><td>Fullscreen</td></tr>
+      <tr><td>B</td><td>Black screen</td></tr>
+      <tr><td>?</td><td>This help</td></tr>
+    </table>
+    <p>This is an aid for the class or talk. The full content is in the source: each scene indicates at the bottom where it comes from.
+       <!-- delete this sentence if there are no formulas: --><b style="color:var(--acc-d)">Green box</b>: formula as it appears in the source; the rest are intermediate steps showing where it comes from.</p>
+  </div></div>
+
+  <!-- Index -->
+  <div id="idx" class="ov"><div class="box">
+    <h3>Index</h3>
+    <p>↑↓ move · → expand · ← collapse · Enter go · Esc close</p>
+    <ol></ol>
+  </div></div>
+</div>
+<div id="blank"></div>
+
+<script>
+/* =====================================================================
+   1 · FORMULAS: <span class="m" data-tex="..."> is converted to HTML on load.
+   TeX-like mini-syntax (details and examples in reference/formulas.md):
+     \fr{a}{b} fraction · \sq{a} root · \pa{a} \bk{a} \br{a} ( ) [ ] { } that stretch
+     a^{b} a_{b} · single letters in italics · \rm{text} upright · \tx{text} normal text
+     \md = ṁ · \dot{x} = ẋ · \gamma \rho \Delta … · \cdot \times \approx \to \Rightarrow …
+     \, \; \quad \qquad spaces · \int_{a}^{b} \sum \prod · \ln \exp \sin \cos functions
+     \ab{a} absolute value · \ovl{a} overline · \bx{a} green box (source formula)
+     \ub[k]{a}{label} under-bracket below "a" with a brief label (what that term means)
+   Steps (same step number as data-in):
+     \in[k]{a} appears on step k · \io[k,l]{a} visible from step k to l−1
+     \cx[k]{a} is crossed out on step k · \cz[k]{a} is crossed out and marked "0"
+     \ha[r]{a} \hb[r]{a} \hc[r]{a} highlights in green, orange or blue on steps r ("2", "2-4", "1,3-4")
+     \ca{a} \cb{a} \cc{a} fixed color (green, orange, blue) to group terms
+   ===================================================================== */
+(() => {
+  const GR = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε', varepsilon: 'ε', zeta: 'ζ', eta: 'η',
+    theta: 'θ', kappa: 'κ', lambda: 'λ', mu: 'μ', nu: 'ν', xi: 'ξ', pi: 'π', rho: 'ρ', sigma: 'σ', tau: 'τ',
+    phi: 'φ', varphi: 'φ', chi: 'χ', psi: 'ψ', omega: 'ω', partial: '∂' };
+  const UPR = { Gamma: 'Γ', Delta: 'Δ', Theta: 'Θ', Lambda: 'Λ', Xi: 'Ξ', Pi: 'Π', Sigma: 'Σ', Phi: 'Φ', Psi: 'Ψ',
+    Omega: 'Ω', nabla: '∇', infty: '∞', ldots: '…', deg: '°', prime: '′', ell: 'ℓ', star: '*' };
+  const FN = { ln: 'ln', log: 'log', exp: 'exp', sin: 'sin', sen: 'sin', cos: 'cos', tan: 'tan', max: 'max', min: 'min', lim: 'lim' };
+  const OP = { '=': '=', '+': '+', '-': '−', '<': '<', '>': '>' };
+  const COP = { cdot: '·', times: '×', approx: '≈', to: '→', rightarrow: '→', leftarrow: '←', Rightarrow: '⇒', iff: '⇔',
+    uparrow: '↑', downarrow: '↓', ll: '≪', gg: '≫', le: '≤', ge: '≥', ne: '≠', pm: '±', mp: '∓', equiv: '≡',
+    sim: '∼', simeq: '≃', propto: '∝', elem: '∈' };
+  const BIG = { sum: '∑', prod: '∏', oint: '∮' };
+  const DOT = { m: 'ṁ', M: 'Ṁ', n: 'ṅ', w: 'ẇ', W: 'Ẇ', x: 'ẋ', X: 'Ẋ' };
+  const SP = { ',': 's1', ';': 's2', quad: 's4', qquad: 's6' };
+  const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function render(s) {
+    let i = 0;
+    const ws = () => { while (i < s.length && /\s/.test(s[i])) i++; };
+    const opt = () => { ws(); if (s[i] !== '[') return ''; const j = s.indexOf(']', i); const v = s.slice(i + 1, j); i = j + 1; return v; };
+    const raw = () => {
+      ws(); if (s[i] !== '{') throw Error('missing "{" in: ' + s);
+      let d = 0, j = i;
+      for (; j < s.length; j++) { if (s[j] === '{') d++; else if (s[j] === '}' && --d === 0) break; }
+      const v = s.slice(i + 1, j); i = j + 1; return v;
+    };
+    const arg = () => { ws(); if (s[i] === '{') { i++; const h = seq(); i++; return h; } return atom(); };
+    function seq() { let h = ''; for (;;) { ws(); if (i >= s.length || s[i] === '}') return h; h += scripted(); } }
+    function scripted() {
+      const base = atom(); let sup = null, sub = null;
+      for (;;) { ws(); if (s[i] === '^') { i++; sup = arg(); } else if (s[i] === '_') { i++; sub = arg(); } else break; }
+      if (sup === null && sub === null) return base;
+      return `<span class="pw">${base}<span class="ss"><span class="su">${sup || ''}</span>` +
+        `<span class="sb">${sub || ''}</span></span></span>`;
+    }
+    function atom() {
+      ws(); const c = s[i];
+      if (c === '{') { i++; const h = seq(); i++; return `<span class="g">${h}</span>`; }
+      if (c === '\\') {
+        i++;
+        if (/[,;!]/.test(s[i])) { const n = SP[s[i++]]; return n ? `<span class="${n}"></span>` : ''; }
+        let j = i; while (j < s.length && /[A-Za-z]/.test(s[j])) j++;
+        const name = s.slice(i, j); i = j;
+        if (GR[name]) return `<i>${GR[name]}</i>`;
+        if (UPR[name]) return `<span>${UPR[name]}</span>`;
+        if (COP[name]) return `<span class="o">${COP[name]}</span>`;
+        if (SP[name]) return `<span class="${SP[name]}"></span>`;
+        if (FN[name]) return `<span class="fn">${FN[name]}</span>`;
+        if (BIG[name]) return `<span class="big">${BIG[name]}</span>`;
+        switch (name) {
+          case 'md': return '<i>ṁ</i>';
+          case 'dot': { ws(); const a = s[i] === '{' ? raw() : s[i++]; return `<i>${DOT[a] || esc(a) + '̇'}</i>`; }
+          case 'int': return '<span class="int">∫</span>';
+          case 'ab': return `<span class="ab">${arg()}</span>`;
+          case 'fr': { const a = arg(), b = arg(); return `<span class="fr"><span class="nu">${a}</span><span class="de">${b}</span></span>`; }
+          case 'sq': return `<span class="sq"><span class="rc">${arg()}</span></span>`;
+          case 'pa': case 'bk': case 'br': return `<span class="dl ${name}">${arg()}</span>`;
+          case 'bx': return `<span class="bx">${arg()}</span>`;
+          case 'ub': { const k = opt(), a = arg(), l = raw();
+            return `<span class="ub"><span class="ubt">${a}</span><span class="ubn"${k ? ` data-in="${k}"` : ''}><span class="ubl">${l}</span></span></span>`; }
+          case 'ovl': return `<span class="ovl">${arg()}</span>`;
+          case 'rm': return `<span class="rm">${esc(raw())}</span>`;
+          case 'tx': return `<span class="tx">${esc(raw())}</span>`;
+          case 'ca': case 'cb': case 'cc': return `<span class="c${name[1].toUpperCase()}">${arg()}</span>`;
+          case 'hi': case 'ha': case 'hb': case 'hc': {
+            const r = opt(), k = name === 'hi' ? 'A' : name[1].toUpperCase();
+            return `<span class="hi h${k}" data-hl="${r}">${arg()}</span>`;
+          }
+          case 'in': { const k = opt(); return `<span class="g" data-in="${k}">${arg()}</span>`; }
+          case 'io': { const [k, l] = opt().split(','); return `<span class="g" data-in="${k}"${/^\d+$/.test(l) ? ` data-out="${l}"` : ''}>${arg()}</span>`; }
+          case 'cx': case 'cz': {
+            const k = opt(), a = arg();
+            return `<span class="cx">${a}<i class="st" data-in="${k}"></i>${name === 'cz' ? `<b class="z0" data-in="${k}">0</b>` : ''}</span>`;
+          }
+          default: throw Error('unknown command \\' + name);
+        }
+      }
+      if (/[A-Za-z]/.test(c)) { i++; return `<i>${c}</i>`; }
+      if (/[0-9]/.test(c)) {
+        let j = i; while (j < s.length && (/[0-9]/.test(s[j]) || (/[.,]/.test(s[j]) && /[0-9]/.test(s[j + 1] || '')))) j++;
+        const t = s.slice(i, j); i = j; return `<span>${t}</span>`;
+      }
+      if (OP[c]) { i++; return `<span class="o">${OP[c]}</span>`; }
+      i++; return `<span>${esc(c)}</span>`;
+    }
+    return seq();
+  }
+  document.querySelectorAll('[data-tex]').forEach(el => {
+    try { el.innerHTML = render(el.dataset.tex); }
+    catch (e) { el.textContent = '⚠ ' + e.message; console.error('Formula: ' + e.message); }
+    el.classList.add('m');
+  });
+})();
+</script>
+
+<script>
+/* =====================================================================
+   2 · FIGURES: charts, nozzles and computed figures. Runs before the
+   engine: whatever is created here with data-in counts as a step of its scene.
+   Details and examples in reference/charts.md.
+   ===================================================================== */
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  /* ---------- Drawing utilities ---------- */
+  function el(tag, at, parent, text) {                    // creates an SVG element
+    const e = document.createElementNS(NS, tag);
+    for (const k in at) if (at[k] != null) e.setAttribute(k, at[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  const f1 = v => v.toFixed(1);
+  const pth = pts => pts.map((p, j) => (j ? 'L' : 'M') + f1(p[0]) + ' ' + f1(p[1])).join(' ');
+  const lin = (a, b, c, d) => v => c + (v - a) * (d - c) / (b - a);          // linear scale [a,b] → [c,d]
+  const lg = (a, b, c, d) => v => c + (Math.log10(v) - Math.log10(a)) * (d - c) / (Math.log10(b) - Math.log10(a));
+  const num = (v, d) => {                                   // number with decimal point
+    if (d == null) return String(+(+v).toPrecision(10));
+    return v.toFixed(d);
+  };
+  /* "T_t", "P_{e}/P_a", "x^{2}" → SVG text with subscripts and superscripts */
+  const svgtex = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/_\{([^}]*)\}|_(\S)/g, (m, a, b) => `<tspan baseline-shift="sub" font-size="72%">${a ?? b}</tspan>`)
+    .replace(/\^\{([^}]*)\}|\^(\S)/g, (m, a, b) => `<tspan baseline-shift="super" font-size="72%">${a ?? b}</tspan>`);
+  const txt = (g, at, s) => { const t = el('text', at, g); t.innerHTML = svgtex(s); return t; };
+
+  /* ---------- Compressible flow (calorically perfect gas) ---------- */
+  const GAS = {
+    tt: (M, g) => 1 + (g - 1) / 2 * M * M,                                   // Tt/T
+    pp: (M, g) => Math.pow(GAS.tt(M, g), -g / (g - 1)),                      // P/Pt
+    ar: (M, g) => Math.pow(2 / (g + 1) * GAS.tt(M, g), (g + 1) / (2 * (g - 1))) / M,  // A/A*
+    mfp: (M, g) => Math.sqrt(g) * M * Math.pow(GAS.tt(M, g), -(g + 1) / (2 * (g - 1))), // MFP·√R
+    mOfPp: (p, g) => Math.sqrt((Math.pow(p, -(g - 1) / g) - 1) * 2 / (g - 1)),        // M from P/Pt
+    mOfAr(ar, g, sup) {                                                        // M from A/A* (subsonic or supersonic branch)
+      let lo = sup ? 1 : 1e-7, hi = sup ? 60 : 1;
+      for (let k = 0; k < 90; k++) {
+        const m = (lo + hi) / 2, f = GAS.ar(m, g) - ar;
+        if ((sup && f > 0) || (!sup && f < 0)) hi = m; else lo = m;
+      }
+      return (lo + hi) / 2;
+    },
+    ns(M1, g) {                                                                // normal shock
+      const m2 = M1 * M1;
+      return {
+        M2: Math.sqrt((1 + (g - 1) / 2 * m2) / (g * m2 - (g - 1) / 2)),
+        p21: 1 + 2 * g / (g + 1) * (m2 - 1),
+        pt21: Math.pow((g + 1) * m2 / 2 / (1 + (g - 1) / 2 * m2), g / (g - 1)) *
+              Math.pow(2 * g / (g + 1) * m2 - (g - 1) / (g + 1), -1 / (g - 1)),
+      };
+    },
+  };
+  window.GAS = GAS;
+
+  /* Monotone interpolation (Fritsch–Carlson) of a table: pchip(xs, ys)(x) */
+  function pchip(xs, ys) {
+    const n = xs.length, h = [], d = [], m = [];
+    for (let k = 0; k < n - 1; k++) { h[k] = xs[k + 1] - xs[k]; d[k] = (ys[k + 1] - ys[k]) / h[k]; }
+    m[0] = d[0]; m[n - 1] = d[n - 2];
+    for (let k = 1; k < n - 1; k++) {
+      if (d[k - 1] * d[k] <= 0) m[k] = 0;
+      else { const w1 = 2 * h[k] + h[k - 1], w2 = h[k] + 2 * h[k - 1]; m[k] = (w1 + w2) / (w1 / d[k - 1] + w2 / d[k]); }
+    }
+    return x => {
+      let k = 0; while (k < n - 2 && x > xs[k + 1]) k++;
+      const t = (x - xs[k]) / h[k], t2 = t * t, t3 = t2 * t;
+      return (2 * t3 - 3 * t2 + 1) * ys[k] + (t3 - 2 * t2 + t) * h[k] * m[k] + (-2 * t3 + 3 * t2) * ys[k + 1] + (t3 - t2) * h[k] * m[k + 1];
+    };
+  }
+
+  /* "Nice" axis marks (1, 2, 5 × 10ⁿ; decades if logarithmic) */
+  function marks([a, b], log) {
+    if (log) { const r = []; for (let e = Math.ceil(Math.log10(a) - 1e-9); e <= Math.log10(b) + 1e-9; e++) r.push(10 ** e); return r; }
+    const raw = (b - a) / 5, p = 10 ** Math.floor(Math.log10(raw)), f = raw / p;
+    const st = (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p, r = [];
+    for (let v = Math.ceil(a / st - 1e-9) * st; v <= b + st * 1e-6; v += st) r.push(+v.toPrecision(12));
+    return r;
+  }
+  /* Axes: frame, grid and marks. o = {X, Y, x0, x1, y0, y1, x: [[v, label]], y: [[v, label]], grid} */
+  function axes(g, o) {
+    for (const [v, t] of o.y || []) {
+      const y = o.Y(v);
+      if (o.grid !== false) el('line', { class: 'gr', x1: o.x0, x2: o.x1, y1: y, y2: y }, g);
+      el('line', { class: 'ax', x1: o.x0 - 6, x2: o.x0, y1: y, y2: y }, g);
+      if (t !== '') el('text', { class: 'tk', x: o.x0 - 12, y: y + 6, 'text-anchor': 'end' }, g, t);
+    }
+    for (const [v, t] of o.x || []) {
+      const x = o.X(v);
+      if (o.grid !== false && o.gridx) el('line', { class: 'gr', x1: x, x2: x, y1: o.y0, y2: o.y1 }, g);
+      el('line', { class: 'ax', x1: x, x2: x, y1: o.y0, y2: o.y0 + 6 }, g);
+      if (t !== '') el('text', { class: 'tk', x, y: o.y0 + 26, 'text-anchor': 'middle' }, g, t);
+    }
+    el('path', { class: 'ax', d: `M${o.x0} ${o.y1} V${o.y0} H${o.x1}` }, g);
+  }
+
+  /* ---------- chart(selector, options): full chart in an empty <svg class="pl"> ----------
+     x, y: [min, max] · log: 'x' | 'y' | 'xy' · box: [left, top, right, bottom] in viewBox px
+     xt, yt: marks ([v, …] or [[v, 'text'], …]; automatic by default) · xl, yl: axis labels
+     curves: [{ f: x => y | data: [[x, y], …] (smooth: true = monotone interpolation),
+                from, to (x range), cls: 'd' dashed · 'th' thin · 'fa' gray · 'ac' green · 'fu' 'ox' 'or',
+                step (data-in), until (data-out), hl (data-hl), draw: true (traced on appear),
+                label: 'label', labelX: label x, dx, dy: offset in px, anchor: 'start'|'middle'|'end' }]
+     points: [{ x, y, label, step, dx, dy, hollow: true }] · lines: [{ x | y | x and y, step, label }] (dashed guides)
+     Returns { X, Y, g } to add things by hand with el(). */
+  function chart(sel, o) {
+    const svg = typeof sel === 'string' ? $(sel) : sel;
+    if (!svg) { console.error('chart: missing ' + sel); return null; }
+    const vb = svg.viewBox.baseVal, W = vb.width || 800, H = vb.height || 600;
+    const [x0, y1, x1, y0] = o.box || [100, 30, W - 30, H - (o.xl ? 78 : 48)];
+    const lx = /x/.test(o.log || ''), ly = /y/.test(o.log || '');
+    const X = (lx ? lg : lin)(o.x[0], o.x[1], x0, x1), Y = (ly ? lg : lin)(o.y[0], o.y[1], y0, y1);
+    const mk = (t, r, l) => (t || marks(r, l)).map(v => Array.isArray(v) ? v : [v, num(v)]);
+    const g = el('g', {}, svg);
+    axes(el('g', { class: 'axg' }, g), { X, Y, x0, x1, y0, y1, x: mk(o.xt, o.x, lx), y: mk(o.yt, o.y, ly), grid: o.grid });
+    if (o.xl) txt(g, { class: 'al', x: (x0 + x1) / 2, y: y0 + 64, 'text-anchor': 'middle' }, o.xl);
+    if (o.yl) txt(g, { class: 'al', transform: `translate(${x0 - 70} ${(y0 + y1) / 2}) rotate(-90)`, 'text-anchor': 'middle' }, o.yl);
+    const layer = (p, extra) => (p == null && !extra) ? g
+      : el('g', { 'data-in': p ?? 0, 'data-out': extra?.until, 'data-hl': extra?.hl, class: extra?.hl != null ? 'hlg' : null }, g);
+    const inside = y => isFinite(y) && y >= Math.min(o.y[0], o.y[1]) - 1e-9 && y <= Math.max(o.y[0], o.y[1]) + 1e-9;
+    for (const c of o.curves || []) {
+      let f = c.f, xa = c.from ?? o.x[0], xb = c.to ?? o.x[1];
+      if (c.data) {
+        const xs = c.data.map(p => p[0]), ys = c.data.map(p => p[1]);
+        xa = c.from ?? xs[0]; xb = c.to ?? xs[xs.length - 1];
+        if (c.smooth) f = pchip(xs, ys);
+      }
+      const segs = []; let cur = [];
+      const pts = [];
+      if (f) {
+        const n = c.n || 300;
+        for (let k = 0; k <= n; k++) {
+          const x = lx ? 10 ** (Math.log10(xa) + (Math.log10(xb) - Math.log10(xa)) * k / n) : xa + (xb - xa) * k / n;
+          pts.push([x, f(x)]);
+        }
+      } else pts.push(...c.data);
+      for (const [x, y] of pts) {
+        if (inside(y)) cur.push([X(x), Y(y)]); else if (cur.length) { segs.push(cur); cur = []; }
+      }
+      if (cur.length) segs.push(cur);
+      const gg = layer(c.draw ? (c.step ?? 0) : c.step, (c.until != null || c.hl != null) ? c : null);
+      const cls = 'crv ' + (c.cls || '') + (c.draw ? ' draw' : '');
+      for (const s of segs) el('path', { class: cls.trim(), d: pth(s), style: c.color ? `stroke:${c.color}` : null }, gg);
+      if (c.marks && c.data) c.data.forEach(([x, y]) => el('circle', { class: 'pto', cx: X(x), cy: Y(y), r: 5 }, gg));
+      if (c.label) {
+        const ex = c.labelX ?? xb, ey = f ? f(ex) : c.data[c.data.length - 1][1];
+        txt(gg, { class: 'cl', x: X(ex) + (c.dx ?? 10), y: Y(ey) + (c.dy ?? 6), 'text-anchor': c.anchor || 'start',
+          style: c.color ? `fill:${c.color}` : null }, c.label);
+      }
+    }
+    for (const l of o.lines || []) {
+      const gg = layer(l.step);
+      let d;
+      if (l.x != null && l.y != null) d = `M${X(l.x)} ${y0} V${Y(l.y)} H${x0}`;
+      else if (l.x != null) d = `M${X(l.x)} ${y0} V${y1}`;
+      else d = `M${x0} ${Y(l.y)} H${x1}`;
+      el('path', { class: 'dh', d }, gg);
+      if (l.label) txt(gg, { class: 'cl', x: (l.x != null ? X(l.x) : x1) + (l.dx ?? 8), y: (l.y != null ? Y(l.y) : y1 + 16) + (l.dy ?? -8),
+        'text-anchor': l.x != null ? 'start' : 'end' }, l.label);
+    }
+    for (const p of o.points || []) {
+      const gg = layer(p.step);
+      el('circle', { class: 'pto' + (p.hollow ? ' hollow' : ''), cx: X(p.x), cy: Y(p.y), r: p.r || 7 }, gg);
+      if (p.label) txt(gg, { class: 'pl-l', x: X(p.x) + (p.dx ?? 14), y: Y(p.y) + (p.dy ?? -14), 'text-anchor': p.anchor || 'start' }, p.label);
+    }
+    return { X, Y, g };
+  }
+
+  /* ---------- Nozzle: <g class="noz" data-noz="x0 x1 yc rc rt re xa xt closed [cold]"> ----------
+     from x0 to x1 with axis at yc; chamber radius rc (straight to xa), throat rt at xt, exit re;
+     closed = 1 draws the back wall; cold = 1 gray inside (no combustion) */
+  function profile(x0, x1, rc, rt, re, xa, xt) {
+    return x => x <= xa ? rc
+      : x <= xt ? rt + (rc - rt) * (1 + Math.cos(Math.PI * (x - xa) / (xt - xa))) / 2
+      : rt + (re - rt) * (1 - Math.pow(1 - (x - xt) / (x1 - xt), 1.6));
+  }
+  function nozzle(g) {
+    const [x0, x1, yc, rc, rt, re, xa, xt, closed, cold] = g.dataset.noz.split(/\s+/).map(Number);
+    const r = profile(x0, x1, rc, rt, re, xa, xt), w = 11, up = [], lo = [];
+    for (let x = x0; x < x1; x += 2) { up.push([x, yc - r(x)]); lo.push([x, yc + r(x)]); }
+    up.push([x1, yc - r(x1)]); lo.push([x1, yc + r(x1)]);
+    const rev = a => a.slice().reverse(), off = (a, s) => a.map(([x, y]) => [x, y + s]);
+    el('path', { class: 'nz-in' + (cold ? ' cold' : ''), d: pth(up) + ' ' + pth(rev(lo)).replace('M', 'L') + ' Z' }, g);
+    el('path', { class: 'nz-w', d: pth(up) + ' ' + pth(rev(off(up, -w))).replace('M', 'L') + ' Z' }, g);
+    el('path', { class: 'nz-w', d: pth(lo) + ' ' + pth(rev(off(lo, w))).replace('M', 'L') + ' Z' }, g);
+    if (closed) {
+      el('rect', { class: 'nz-w', x: x0 - w, y: yc - rc - w, width: w, height: 2 * rc + 2 * w }, g);
+      el('path', { class: 'nz-l', d: `M${x0} ${yc - rc} V${yc + rc}` }, g);
+    }
+    el('path', { class: 'nz-l', d: pth(up) }, g);
+    el('path', { class: 'nz-l', d: pth(lo) }, g);
+  }
+  $$('g.noz').forEach(nozzle);
+
+  /* =====================================================================
+     FIGURES FOR THIS PRESENTATION (one call per chart, with the slide)
+     ===================================================================== */
+
+  /* Slide 9: accumulated capital (template example) */
+  chart('#g-example', {
+    x: [0, 20], y: [0, 3.5], xl: 'Time (years)', yl: 'Capital (× C_{0})',
+    xt: [0, 5, 10, 15, 20],
+    curves: [
+      { f: t => Math.pow(1.03, t), step: 0, draw: true, label: 'i = 3 %', labelX: 15, dy: -12 },
+      { f: t => Math.pow(1.06, t), step: 2, cls: 'd', label: 'i = 6 %', labelX: 19, dx: -80, dy: -18 },
+    ],
+    lines: [{ x: 10, step: 1 }],
+    points: [{ x: 10, y: Math.pow(1.03, 10), label: num(Math.pow(1.03, 10), 2), step: 1 }],
+  });
+
+  /* Curves traced when they appear: length on the dashed stroke. If they have no
+     step (no data-in above), they appear on the first step of the scene. */
+  $$('.draw').forEach(p => {
+    const L = Math.ceil(p.getTotalLength()) + 2; p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
+    if (!p.closest('[data-in]')) p.setAttribute('data-in', '0');
+  });
+})();
+</script>
+
+<script>
+/* =====================================================================
+   3 · EDITABLE CONTENT: scene order and camera states
+   ===================================================================== */
+
+/* Presentation order. A name = all steps of that scene;
+   [scene, [steps]] = only those steps (a scene can appear several times). */
+const ORDER = [
+  'cover',
+  'list',
+  'diagram',
+  'objective',
+  'derivation',
+  'example',
+  'approach',
+  'solution',
+  'chart',
+  'compare',
+  'cards',
+  'toolbox',
+  'tiles',
+  'phases',
+  'bars',
+  ['camera', [0, 1, 2, 3]],
+  'q-example',
+  'summary',
+  // ['camera', [4]],   // e.g. return to the overview at the end
+];
+
+/* Camera states (only if there is a "camera" scene): view [x, y, width, height] with the
+   same ratio as the SVG (here 1440×640 = 2.25), highlighted node, footer text and
+   frame section. Each node must stay entirely inside the view or entirely outside it. */
+const CAMERA = [
+  { view: [0, 0, 1440, 640], focus: 'root', footer: 'Source sentence about the classification', sec: 'Classification' },
+  { view: [-100, 20, 960, 427], focus: 'a', footer: 'Definition of A (from the source)', sec: 'Branch A' },
+  { view: [120, 20, 1200, 533], focus: 'b', footer: 'Definition of B (from the source)', sec: 'Branch B' },
+  { view: [580, 20, 960, 427], focus: 'c', footer: 'Definition of C (from the source)', sec: 'Branch C' },
+  { view: [0, 0, 1440, 640], focus: null, footer: '', sec: 'Classification' },
+];
+
+/* =====================================================================
+   ENGINE (no need to touch it to change the content)
+   data-in="k" appears · data-out="k" disappears · data-go="k" adds .go (processes with an end)
+   data-hl="r" adds .on on steps r ("2", "2-4", "1,3-4")
+   ===================================================================== */
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const Q = new URLSearchParams(location.search);
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || Q.has('static');
+if (REDUCED) document.documentElement.classList.add('static');
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const raf = {};
+/* Interpolates the numbers from "from" to "to" over "dur" ms and calls frame(v) on each frame. */
+function tween(key, from, to, dur, frame) {
+  cancelAnimationFrame(raf[key]);
+  if (REDUCED || dur <= 0) { frame({ ...to }); return; }
+  const t0 = performance.now();
+  const step = now => {
+    const u = Math.min(1, (now - t0) / dur), e = ease(u), v = {};
+    for (const k in to) v[k] = from[k] + (to[k] - from[k]) * e;
+    frame(v);
+    if (u < 1) raf[key] = requestAnimationFrame(step);
+  };
+  raf[key] = requestAnimationFrame(step);
+}
+
+const stage = $('#stage');
+/* Scenes with custom logic: SCENES[id] = {
+     render(k, {jump, entering, dir}) → {ref?}  (called on each step of the scene)
+     steps?: number of steps (if absent, data-in / data-out / data-go / data-hl are counted)
+     sec?(k): section name of that step (if absent, data-section) } */
+const SCENES = {};
+
+/* ---------------- Camera ---------------- */
+const camSec = $('#cam') && $('#cam').closest('.scene');
+if (camSec) SCENES[camSec.id] = (() => {
+  const svg = $('#cam'), cap = $('#cam-cap');
+  if (!svg) return undefined;
+  let vb = { x: 0, y: 0, w: 1440, h: 640 };
+  const set = v => { vb = v; svg.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`); };
+  return {
+    steps: CAMERA.length,
+    render(k, ctx) {
+      const st = CAMERA[k], [x, y, w, h] = st.view, to = { x, y, w, h };
+      if (ctx.jump || ctx.entering) set(to); else tween('cam', vb, to, 900, set);
+      $$('g[data-k]', svg).forEach(g => {
+        g.classList.toggle('focus', g.dataset.k === st.focus);
+        g.classList.toggle('dim', !!st.focus && g.dataset.k !== st.focus && st.focus !== 'root');
+      });
+      cap.textContent = st.footer;
+    },
+    sec: k => CAMERA[k].sec,
+  };
+})();
+
+/* ---------------- Sequence and navigation ---------------- */
+const SEQ = [];
+const inR = (k, r) => String(r).split(',').some(p => { const [a, b = a] = p.split('-').map(Number); return k >= a && k <= b; });
+const stepNum = v => /^\d+$/.test(v) ? +v : 0;
+const secOf = s => (SCENES[s.id] && SCENES[s.id].sec && SCENES[s.id].sec(s.k)) || $('#' + s.id).dataset.section || '';
+function stepsOf(id) {
+  if (SCENES[id] && SCENES[id].steps) return SCENES[id].steps;
+  let m = 0;
+  const sc = $('#' + id);
+  $$('[data-in],[data-out],[data-go]', sc).forEach(e => { m = Math.max(m, stepNum(e.dataset.in), stepNum(e.dataset.out), stepNum(e.dataset.go)); });
+  $$('[data-hl]', sc).forEach(e => e.dataset.hl.split(/[,-]/).forEach(v => { m = Math.max(m, +v || 0); }));
+  return m + 1;
+}
+for (const it of ORDER) {
+  const id = Array.isArray(it) ? it[0] : it;
+  if (!$('#' + id) || !$('#' + id).classList.contains('scene')) throw Error('ORDER: scene "' + id + '" does not exist');
+  if (Array.isArray(it)) it[1].forEach(k => SEQ.push({ id, k }));
+  else for (let k = 0, n = stepsOf(it); k < n; k++) SEQ.push({ id, k });
+}
+
+let cur = -1;
+function go(i, opt = {}) {
+  i = Math.max(0, Math.min(SEQ.length - 1, i));
+  if (i === cur) return;
+  const prev = SEQ[cur], next = SEQ[i];
+  const entering = !prev || prev.id !== next.id;
+  const jump = !!opt.jump || cur < 0 || Math.abs(i - cur) !== 1;
+  if (entering) {
+    if (prev) $('#' + prev.id).classList.remove('active');
+    $('#' + next.id).classList.add('active');
+  }
+  const sc = $('#' + next.id);
+  $$('[data-in],[data-out]', sc).forEach(e => {
+    const a = stepNum(e.dataset.in), b = e.dataset.out ? stepNum(e.dataset.out) : 1e9;
+    e.classList.toggle('vis', next.k >= a && next.k < b);
+  });
+  $$('[data-go]', sc).forEach(e => e.classList.toggle('go', next.k >= stepNum(e.dataset.go)));
+  $$('[data-hl]', sc).forEach(e => e.classList.toggle('on', inR(next.k, e.dataset.hl)));
+  const info = (SCENES[next.id] && SCENES[next.id].render(next.k, { jump, entering, dir: i > cur ? 1 : -1 })) || {};
+  cur = i;
+  stage.classList.toggle('cover', next.id === 'cover');
+  stage.classList.toggle('pr', sc.classList.contains('pr'));
+  $('#acronyms').innerHTML = (sc.dataset.acronyms || '').split(' · ').filter(Boolean).map(t => `<div>${t}</div>`).join('');
+  const refs = sc.dataset.refs ? sc.dataset.refs.split('|') : null;
+  $('#sec').textContent = secOf(next);
+  $('#ref').textContent = info.ref || (refs && refs[Math.min(next.k, refs.length - 1)]) || sc.dataset.ref || '';
+  $('#count').textContent = `${i + 1} / ${SEQ.length}`;
+  $('#bar i').style.width = (100 * i / Math.max(1, SEQ.length - 1)) + '%';
+  history.replaceState(null, '', '#' + (i + 1));
+  markIndex();
+  if (DEBUG) markOverflows(sc);
+}
+const nextStep = () => go(cur + 1);
+const prevStep = () => go(cur - 1);
+/* For the testing tools (review.py) */
+window.PRES = { go: i => go(i, { jump: true }), steps: SEQ.map(s => s.id + ':' + s.k), js: Object.keys(SCENES), current: () => cur };
+
+/* Index: sections (data-section) that expand into their scenes (title = data-title or h2) */
+const idxList = $('#idx ol');
+const sections = [];
+SEQ.forEach((s, i) => {
+  const name = secOf(s) || 'Cover';
+  let sec = sections[sections.length - 1];
+  if (!sec || sec.name !== name) sections.push(sec = { name, i, sc: [] });
+  const last = sec.sc[sec.sc.length - 1];
+  if (!last || last.id !== s.id || SEQ[i - 1].id !== s.id) {
+    const el = $('#' + s.id), h = el.dataset.title || ($('h2', el) || {}).textContent || s.id;
+    sec.sc.push({ id: s.id, i, name: h.replace(/\s+/g, ' ').trim() });
+  }
+});
+const item = (name, i) => {
+  const d = document.createElement('div'); d.className = 'it';
+  d.innerHTML = `<span class="tg"></span><span class="nm"></span><span class="pg">${i + 1}</span>`;
+  d.querySelector('.nm').textContent = name; d.dataset.i = i; return d;
+};
+sections.forEach(s => {
+  const li = document.createElement('li'); li.className = 's';
+  s.it = item(s.name, s.i); li.appendChild(s.it);
+  if (s.sc.length > 1) {
+    s.it.querySelector('.tg').textContent = '▸';
+    const ol = document.createElement('ol');
+    s.sc.forEach(c => { const l2 = document.createElement('li'); c.it = item(c.name, c.i); c.it.querySelector('.tg').remove(); l2.appendChild(c.it); ol.appendChild(l2); });
+    li.appendChild(ol);
+  }
+  s.li = li; idxList.appendChild(li);
+});
+idxList.addEventListener('click', e => {
+  const it = e.target.closest('.it'); if (!it) return;
+  e.stopPropagation();
+  const li = it.parentElement;
+  if (li.classList.contains('s') && li.querySelector('ol') && e.target.closest('.tg')) { li.classList.toggle('open'); selIdx(it); return; }
+  closeOv(); go(+it.dataset.i, { jump: true });
+});
+const idxItems = () => $$('.it', idxList).filter(it => it.offsetParent !== null);
+function selIdx(it) {
+  $$('.it.sel', idxList).forEach(x => x.classList.remove('sel'));
+  if (it) { it.classList.add('sel'); it.scrollIntoView({ block: 'nearest' }); }
+}
+function idxKey(k) {
+  const its = idxItems(), cur0 = $('.it.sel', idxList), j = its.indexOf(cur0);
+  const li = cur0 && cur0.parentElement, sec = li && li.classList.contains('s') ? li : null;
+  if (k === 'ArrowDown') selIdx(its[Math.min(its.length - 1, j + 1)]);
+  else if (k === 'ArrowUp') selIdx(its[Math.max(0, j - 1)]);
+  else if (k === 'ArrowRight') { if (sec && sec.querySelector('ol')) sec.classList.add('open'); }
+  else if (k === 'ArrowLeft') {
+    if (sec && sec.classList.contains('open')) sec.classList.remove('open');
+    else if (!sec && li) selIdx(li.closest('.s').firstElementChild);
+  } else if (k === 'Enter' && cur0) { closeOv(); go(+cur0.dataset.i, { jump: true }); }
+  else return false;
+  return true;
+}
+function markIndex() {
+  let here = sections[0];
+  for (const s of sections) if (s.i <= cur) here = s;
+  let hc = null;
+  for (const c of here.sc) if (c.i <= cur) hc = c;
+  sections.forEach(s => { s.li.classList.toggle('here', s === here); s.sc.forEach(c => c.it && c.it.classList.toggle('here', c === hc)); });
+}
+function openIdx() {
+  openOv('idx');
+  const here = sections.find(s => s.li.classList.contains('here')) || sections[0];
+  sections.forEach(s => s.li.classList.toggle('open', s === here));
+  const hc = $('.it.here', here.li);
+  selIdx(hc || here.it);
+}
+
+/* ?debug: safe area and, in red, the visible boxes (with background or border) whose text overflows
+   (the same criterion as review.py) */
+const DEBUG = Q.has('debug');
+if (DEBUG) document.documentElement.classList.add('debug');
+function markOverflows(sc) {
+  $$('.overflow').forEach(e => e.classList.remove('overflow'));
+  const vis = c => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return false; const v = m[1].split(',').map(parseFloat);
+    return (v.length < 4 || v[3] > 0.05) && !(v[0] > 250 && v[1] > 250 && v[2] > 250); };
+  requestAnimationFrame(() => $$('*', sc).forEach(c => {
+    if (c instanceof SVGElement || c.closest('.m') || !c.offsetParent) return;
+    const cs = getComputedStyle(c), L = {};
+    ['Top', 'Right', 'Bottom', 'Left'].forEach(k => { if (vis(cs.backgroundColor) || (parseFloat(cs['border' + k + 'Width']) > 0 && vis(cs['border' + k + 'Color']))) L[k] = 1; });
+    if (!Object.keys(L).length) return;
+    const r = c.getBoundingClientRect(), rg = document.createRange(), w = document.createTreeWalker(c, NodeFilter.SHOW_TEXT);
+    for (let n; (n = w.nextNode());) {
+      if (!n.textContent.trim()) continue;
+      rg.selectNodeContents(n);
+      for (const q of rg.getClientRects()) if ((L.Left && q.left < r.left - 3) || (L.Right && q.right > r.right + 3) ||
+        (L.Top && q.top < r.top - 3) || (L.Bottom && q.bottom > r.bottom + 3)) { c.classList.add('overflow'); return; }
+    }
+  }));
+}
+
+function openOv(id) { closeOv(); $('#' + id).classList.add('open'); }
+function closeOv() { $$('.ov').forEach(o => o.classList.remove('open')); }
+const ovOpen = () => !!$('.ov.open');
+
+function fit() {
+  const s = Math.min(innerWidth / 1600, innerHeight / 900);
+  stage.style.transform = `translate(${(innerWidth - 1600 * s) / 2}px, ${(innerHeight - 900 * s) / 2}px) scale(${s})`;
+}
+addEventListener('resize', fit);
+fit();
+
+addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const blank = $('#blank');
+  if (blank.classList.contains('on') && !['b', 'B', '.'].includes(e.key)) { blank.classList.remove('on'); e.preventDefault(); return; }
+  if ($('#idx').classList.contains('open') && idxKey(e.key)) { e.preventDefault(); return; }
+  switch (e.key) {
+    case 'ArrowRight': case 'ArrowDown': case 'PageDown': case 'Enter': case ' ':
+      if (ovOpen()) closeOv(); else if (e.key === ' ' && e.shiftKey) prevStep(); else nextStep(); break;
+    case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace':
+      if (ovOpen()) closeOv(); else prevStep(); break;
+    case 'Home': go(0, { jump: true }); break;
+    case 'End': go(SEQ.length - 1, { jump: true }); break;
+    case 'f': case 'F':
+      if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {});
+      break;
+    case 'b': case 'B': case '.': blank.classList.toggle('on'); break;
+    case 'i': case 'I': case 'o': case 'O': $('#idx').classList.contains('open') ? closeOv() : openIdx(); break;
+    case '?': case 'h': case 'H': $('#help').classList.contains('open') ? closeOv() : openOv('help'); break;
+    case 'Escape': closeOv(); return;
+    default: return;
+  }
+  e.preventDefault();
+});
+stage.addEventListener('click', e => {
+  if (e.target.closest('#nav')) return;
+  if (e.target.closest('.ov')) { if (!e.target.closest('.box')) closeOv(); return; }
+  nextStep();
+});
+$('#blank').addEventListener('click', () => $('#blank').classList.remove('on'));
+$('#prev').addEventListener('click', prevStep);
+$('#next').addEventListener('click', nextStep);
+let tx = null;
+stage.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+stage.addEventListener('touchend', e => {
+  if (tx === null) return;
+  const dx = e.changedTouches[0].clientX - tx; tx = null;
+  if (Math.abs(dx) > 60) { e.preventDefault(); (dx < 0 ? nextStep : prevStep)(); }
+});
+let idleT;
+addEventListener('mousemove', () => {
+  document.body.classList.remove('idle');
+  clearTimeout(idleT);
+  idleT = setTimeout(() => document.body.classList.add('idle'), 2500);
+});
+
+const fromHash = () => { const n = parseInt(location.hash.slice(1), 10); return isNaN(n) ? 0 : n - 1; };
+addEventListener('hashchange', () => { const n = fromHash(); if (n !== cur) go(n, { jump: true }); });
+addEventListener('DOMContentLoaded', () => {
+  $$('img[data-img]').forEach(im => { if (IMG[im.dataset.img]) im.src = IMG[im.dataset.img]; });
+  go(fromHash(), { jump: true });
+});
+/* ?t=ms: freezes all animations at that instant (test screenshots), including SVG ones.
+   No setTimeout: headless Chrome does not run timers when taking screenshots. */
+if (Q.has('t')) addEventListener('load', () => {
+  document.getAnimations().forEach(a => { try { a.pause(); a.currentTime = +Q.get('t'); } catch (e) {} });
+  $$('svg').forEach(v => { try { v.pauseAnimations(); v.setCurrentTime(+Q.get('t') / 1000); } catch (e) {} });
+});
+})();
+</script>
+<script>
+/* 4 · Images (source photos, in grayscale). Managed with
+   tools/images.py; this line must be alone and be the last one of the block. */
+const IMG = {};
+</script>
+<style id="fonts">/* Formula fonts: set by tools/fonts.py (new.py does it). */</style>
+</body>
+</html>

@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Tool syntax
+        run: python3 -m py_compile skills/enhanced-presentations/tools/*.py tools/package.py
+
+      - name: Generate a presentation and replace the placeholders
+        run: |
+          python3 skills/enhanced-presentations/tools/new.py /tmp/demo.html \
+            --title "Test presentation" --brand "Demo" --block "Block 1" \
+            --source "test content" --parts "One|Two"
+          ! grep -q "Presentation title" /tmp/demo.html
+          ! grep -q "Brand or subject" /tmp/demo.html
+          grep -q "const ORDER = \[" /tmp/demo.html
+
+      - name: Insert a component
+        run: |
+          python3 skills/enhanced-presentations/tools/component.py list \
+            --in /tmp/demo.html --id list --after cover --section "List" --ref "Slide 1"
+          grep -q 'id="list"' /tmp/demo.html
+          grep -q "'list'," /tmp/demo.html
+
+      - name: Package the skill
+        run: python3 tools/package.py

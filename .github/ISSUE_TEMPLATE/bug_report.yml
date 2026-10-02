@@ -1,0 +1,48 @@
+name: Problem with a presentation
+description: Report a presentation that went wrong (lost content, overlap, unreadable diagram…)
+title: "[Problem] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > [!WARNING]
+        > **Do not attach private or confidential material.** Anonymize screenshots, source texts and
+        > `review.py` output before posting: remove names, emails, grades, unpublished data and anything
+        > covered by an NDA. If the source is private, describe the problem with a minimal redacted example
+        > instead of uploading the original.
+
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: Type and approximate size of the source (PPTX, PDF, text) and whether it is public or private.
+      placeholder: "30-page PDF / 20-slide PPTX / pasted text"
+    validations:
+      required: true
+
+  - type: input
+    id: prompt
+    attributes:
+      label: What you asked for
+      description: The exact prompt you gave the agent.
+      placeholder: "Turn this PDF into an animated HTML presentation"
+    validations:
+      required: true
+
+  - type: textarea
+    id: failure
+    attributes:
+      label: What went wrong
+      description: Describe the failure (missing content, something overlapping, a confusing animation…). Attach a screenshot and the output of `review.py` if you can.
+    validations:
+      required: true
+
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and model
+      description: Where you used it (Claude Code, Codex, OpenCode…) and with which model.
+      placeholder: "OpenCode · DeepSeek V4.1 Flash"
+    validations:
+      required: false

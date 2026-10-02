@@ -1,0 +1,17 @@
+{
+  "name": "enhanced-presentations-skill",
+  "description": "AI agent skill to turn a PowerPoint, a PDF, a document or a text into an animated, self-contained HTML presentation faithful to the content.",
+  "owner": {
+    "name": "Pablo Magariños",
+    "url": "https://github.com/Pablomg02/enhanced-presentations-skill"
+  },
+  "plugins": [
+    {
+      "name": "enhanced-presentations",
+      "source": "./skills/enhanced-presentations",
+      "description": "Turns a PowerPoint, a PDF, a document or a text into an animated HTML presentation with a single prompt: step-based scenes, redrawn diagrams, derived formulas, source style and automatic review.",
+      "category": "productivity",
+      "tags": ["presentations", "html", "pptx", "pdf", "teaching", "slides"]
+    }
+  ]
+}
