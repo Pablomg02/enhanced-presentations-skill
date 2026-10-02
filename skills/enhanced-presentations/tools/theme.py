@@ -81,7 +81,7 @@ def from_pptx(path):
     if fs is not None:
         for tag in ('majorFont', 'minorFont'):
             e = fs.find(f'{{*}}{tag}/{{*}}latin')
-            if e is not None and e.get('typeface'):
+            if e is not None and e.get('typeface') and e.get('typeface') not in fonts:
                 fonts.append(e.get('typeface'))
     return colors, fonts
 

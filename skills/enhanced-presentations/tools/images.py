@@ -28,8 +28,10 @@ if a.order == 'list':
     print(f'Total {sum(len(v) for v in imgs.values()) // 1024} KB in base64'); sys.exit()
 if not a.name: sys.exit('Missing name')
 if a.order == 'remove':
+    if a.name not in imgs: sys.exit(f'There is no image "{a.name}" in IMG')
     imgs.pop(a.name)
 else:
+    if not a.photo: sys.exit('Missing photo: images.py pres.html put name photo.png')
     im = Image.open(a.photo).convert('RGBA')
     background = Image.new('RGBA', im.size, 'white'); background.alpha_composite(im); im = background.convert('RGB')
     if a.crop: im = im.crop(tuple(int(v) for v in a.crop.split(',')))

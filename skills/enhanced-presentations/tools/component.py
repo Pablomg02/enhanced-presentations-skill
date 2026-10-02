@@ -58,6 +58,7 @@ if not a.in_:
 
 # ---------------- insert into a presentation ----------------
 if not a.id or not re.fullmatch(r'[\w-]+', a.id): sys.exit('Missing --id (short, no spaces)')
+if n == 'question' and not a.id.startswith('q-'): sys.exit('The id of a question must start with "q-" (e.g. --id q-altitude): review.py relies on it')
 doc = open(a.in_, encoding='utf-8').read()
 if re.search(rf'\bid="{re.escape(a.id)}"', doc): sys.exit(f'An element with id="{a.id}" already exists in {a.in_}')
 inner_ids = set(re.findall(r'id="([^"]+)"', sec)) - {old_id}
@@ -70,7 +71,7 @@ if a.section is None and a.after:  # no --section: that of the previous scene (s
     m = re.search(rf'<section\b(?:[^>"]|"[^"]*")*\bid="{re.escape(a.after)}"(?:[^>"]|"[^"]*")*>', doc)
     prev_section = m and re.search(r'data-section="([^"]*)"', m.group(0))
     if prev_section: a.section = inherited = prev_section.group(1)
-pending = [f'{x}="{re.search(rf"{x}=.([^\"]*)", open_tag).group(1)}"' for x, v in (('data-section', a.section), ('data-ref', a.ref))
+pending = [re.search(x + r'="[^"]*"', open_tag).group(0) for x, v in (('data-section', a.section), ('data-ref', a.ref))
            if v is None and f'{x}="' in open_tag] + (['data-acronyms (example acronyms)'] if 'data-acronyms="' in open_tag else [])
 new_tag = open_tag
 for attr, val in (('data-section', a.section), ('data-ref', a.ref)):

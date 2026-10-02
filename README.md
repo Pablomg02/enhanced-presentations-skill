@@ -1,10 +1,10 @@
 # Enhanced Presentations
 
-**AI agent skill that turns a PowerPoint, a PDF or a text into an animated, self-contained HTML presentation faithful to the source content.**
+**AI agent skill that turns a PowerPoint, a PDF, a document or a text into an animated, self-contained HTML presentation faithful to the source content.**
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/Pablomg02/enhanced-presentations-skill)](https://github.com/Pablomg02/enhanced-presentations-skill/releases)
-[![Python 3](https://img.shields.io/badge/python-3-3776AB.svg?logo=python&logoColor=white)](#requirements)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-3776AB.svg?logo=python&logoColor=white)](#requirements)
 
 > [!NOTE]
 > **Summary.** Starting from a source (a PowerPoint, a PDF with notes, slides or an article, another document
@@ -105,7 +105,7 @@ the rules in `reference/documents.md`, and to **review or extend** an existing p
 
 ## Requirements
 
-- **Python 3** with **Pillow** (`images.py` and the contact sheets).
+- **Python 3.8 or later** with **Pillow** (`images.py` and the contact sheets).
 - **`pdftoppm`, `pdftotext` and `pdfimages`** (poppler-utils) to read PDFs, to convert PPTX files and to
   extract the photos of the non-presentation formats (PDF, DOCX, ODT…).
 - **LibreOffice** (`soffice`) to convert any document to PDF (`.pptx`, `.odp`, `.docx`, `.odt`…).
